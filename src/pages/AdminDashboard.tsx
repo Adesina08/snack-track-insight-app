@@ -239,15 +239,20 @@ const AdminDashboard = () => {
                 blockSize={12}
                 blockMargin={2}
                 showWeekdayLabels
-                renderBlock={(block, activity) => (
-                  <div
-                    title={`${activity.date}: ${activity.count} logs`}
-                    style={{
-                      backgroundColor: block.backgroundColor,
-                      borderRadius: '2px'
-                    }}
-                  />
-                )}
+                renderBlock={(block, activity) => {
+                  const colors = ['#f0f9ff', '#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8'];
+                  return (
+                    <div
+                      title={`${activity.date}: ${activity.count} logs`}
+                      style={{
+                        backgroundColor: colors[activity.level],
+                        borderRadius: '2px',
+                        width: '12px',
+                        height: '12px'
+                      }}
+                    />
+                  );
+                }}
               />
             </div>
             <div className="flex items-center justify-between mt-4 text-sm text-muted-foreground">

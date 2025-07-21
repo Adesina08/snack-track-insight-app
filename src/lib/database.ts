@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'http://localhost:5432';
@@ -13,6 +12,7 @@ export interface User {
   firstName: string;
   lastName: string;
   phone?: string;
+  passwordHash: string;
   createdAt: string;
   points: number;
 }
@@ -70,9 +70,20 @@ export const dbOperations = {
   },
 
   async updateUserPoints(userId: string, points: number) {
+    // Get current user points first, then update
+    const { data: user, error: fetchError } = await supabase
+      .from('users')
+      .select('points')
+      .eq('id', userId)
+      .single();
+    
+    if (fetchError) throw fetchError;
+    
+    const newPoints = (user.points || 0) + points;
+    
     const { data, error } = await supabase
       .from('users')
-      .update({ points: supabase.sql`points + ${points}` })
+      .update({ points: newPoints })
       .eq('id', userId)
       .select()
       .single();
