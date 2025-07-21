@@ -61,9 +61,32 @@ const AdminDashboard = () => {
       
     } catch (error) {
       console.error('Error loading admin data:', error);
+      // Set fallback activity data to prevent empty array error
+      setActivityData(generateFallbackActivityData());
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const generateFallbackActivityData = (): ActivityData[] => {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 365);
+    
+    const data: ActivityData[] = [];
+    const currentDate = new Date(startDate);
+    
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      data.push({
+        date: dateStr,
+        count: 0,
+        level: 0
+      });
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return data;
   };
 
   const generateActivityHeatmap = (analytics: any[]): ActivityData[] => {
@@ -228,48 +251,56 @@ const AdminDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <ActivityCalendar
-                data={activityData}
-                theme={{
-                  light: ['#f0f9ff', '#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8'],
-                  dark: ['#1e293b', '#334155', '#475569', '#64748b', '#94a3b8']
-                }}
-                fontSize={12}
-                blockSize={12}
-                blockMargin={2}
-                showWeekdayLabels
-                renderBlock={(block, activity) => {
-                  const colors = ['#f0f9ff', '#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8'];
-                  return (
-                    <div
-                      title={`${activity.date}: ${activity.count} logs`}
-                      style={{
-                        backgroundColor: colors[activity.level],
-                        borderRadius: '2px',
-                        width: '12px',
-                        height: '12px'
-                      }}
-                    />
-                  );
-                }}
-              />
-            </div>
-            <div className="flex items-center justify-between mt-4 text-sm text-muted-foreground">
-              <span>Less</span>
-              <div className="flex items-center space-x-1">
-                {[0, 1, 2, 3, 4].map(level => (
-                  <div
-                    key={level}
-                    className="w-3 h-3 rounded-sm"
-                    style={{
-                      backgroundColor: ['#f0f9ff', '#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8'][level]
+            {activityData.length > 0 ? (
+              <>
+                <div className="overflow-x-auto">
+                  <ActivityCalendar
+                    data={activityData}
+                    theme={{
+                      light: ['#f0f9ff', '#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8'],
+                      dark: ['#1e293b', '#334155', '#475569', '#64748b', '#94a3b8']
+                    }}
+                    fontSize={12}
+                    blockSize={12}
+                    blockMargin={2}
+                    showWeekdayLabels
+                    renderBlock={(block, activity) => {
+                      const colors = ['#f0f9ff', '#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8'];
+                      return (
+                        <div
+                          title={`${activity.date}: ${activity.count} logs`}
+                          style={{
+                            backgroundColor: colors[activity.level],
+                            borderRadius: '2px',
+                            width: '12px',
+                            height: '12px'
+                          }}
+                        />
+                      );
                     }}
                   />
-                ))}
+                </div>
+                <div className="flex items-center justify-between mt-4 text-sm text-muted-foreground">
+                  <span>Less</span>
+                  <div className="flex items-center space-x-1">
+                    {[0, 1, 2, 3, 4].map(level => (
+                      <div
+                        key={level}
+                        className="w-3 h-3 rounded-sm"
+                        style={{
+                          backgroundColor: ['#f0f9ff', '#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8'][level]
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span>More</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-32 text-muted-foreground">
+                <p>No activity data available</p>
               </div>
-              <span>More</span>
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -280,27 +311,33 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {stats.recentActivity.map((log, index) => (
-                <div key={index} className="flex items-center justify-between p-4 glass-effect rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center">
-                      <Database className="h-5 w-5 text-white" />
+              {stats.recentActivity.length > 0 ? (
+                stats.recentActivity.map((log, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 glass-effect rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center">
+                        <Database className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{log.users?.firstName} {log.users?.lastName}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Logged {log.product} • {log.category}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium">{log.users?.firstName} {log.users?.lastName}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Logged {log.product} • {log.category}
-                      </p>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant={log.captureMethod === 'ai' ? 'default' : 'secondary'}>
+                        {log.captureMethod}
+                      </Badge>
+                      <span className="text-sm font-medium text-green-600">+{log.points} pts</span>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={log.captureMethod === 'ai' ? 'default' : 'secondary'}>
-                      {log.captureMethod}
-                    </Badge>
-                    <span className="text-sm font-medium text-green-600">+{log.points} pts</span>
-                  </div>
+                ))
+              ) : (
+                <div className="flex items-center justify-center h-32 text-muted-foreground">
+                  <p>No recent activity</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
