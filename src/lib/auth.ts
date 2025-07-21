@@ -1,5 +1,4 @@
 
-import jwt from 'jsonwebtoken';
 import { dbOperations, User } from './database';
 
 const JWT_SECRET = import.meta.env.VITE_JWT_SECRET || 'your-jwt-secret-key';
@@ -10,24 +9,105 @@ export interface AuthTokenPayload {
   exp: number;
 }
 
-export const authUtils = {
-  generateToken(user: User): string {
-    return jwt.sign(
-      {
-        userId: user.id,
-        email: user.email,
-        exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
-      },
-      JWT_SECRET
-    );
-  },
+// Browser-compatible JWT implementation
+class BrowserJWT {
+  private static base64UrlEncode(str: string): string {
+    return btoa(str)
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+  }
 
-  verifyToken(token: string): AuthTokenPayload | null {
+  private static base64UrlDecode(str: string): string {
+    // Add padding if needed
+    str += '='.repeat((4 - str.length % 4) % 4);
+    return atob(str.replace(/-/g, '+').replace(/_/g, '/'));
+  }
+
+  static async sign(payload: any, secret: string): Promise<string> {
+    const header = {
+      alg: 'HS256',
+      typ: 'JWT'
+    };
+
+    const headerBase64 = this.base64UrlEncode(JSON.stringify(header));
+    const payloadBase64 = this.base64UrlEncode(JSON.stringify(payload));
+    
+    const data = `${headerBase64}.${payloadBase64}`;
+    
+    // Create signature using Web Crypto API
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+    
+    const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
+    const signatureBase64 = this.base64UrlEncode(String.fromCharCode(...new Uint8Array(signature)));
+    
+    return `${data}.${signatureBase64}`;
+  }
+
+  static async verify(token: string, secret: string): Promise<any | null> {
     try {
-      return jwt.verify(token, JWT_SECRET) as AuthTokenPayload;
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+
+      const [headerBase64, payloadBase64, signatureBase64] = parts;
+      
+      // Verify signature
+      const data = `${headerBase64}.${payloadBase64}`;
+      const encoder = new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        'raw',
+        encoder.encode(secret),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['verify']
+      );
+
+      // Convert base64url signature to ArrayBuffer
+      const signatureStr = this.base64UrlDecode(signatureBase64);
+      const signature = new Uint8Array(signatureStr.length);
+      for (let i = 0; i < signatureStr.length; i++) {
+        signature[i] = signatureStr.charCodeAt(i);
+      }
+
+      const isValid = await crypto.subtle.verify('HMAC', key, signature, encoder.encode(data));
+      if (!isValid) return null;
+
+      // Decode payload
+      const payload = JSON.parse(this.base64UrlDecode(payloadBase64));
+      
+      // Check expiration
+      if (payload.exp && Date.now() / 1000 > payload.exp) {
+        return null;
+      }
+
+      return payload;
     } catch (error) {
+      console.error('JWT verification error:', error);
       return null;
     }
+  }
+}
+
+export const authUtils = {
+  async generateToken(user: User): Promise<string> {
+    const payload = {
+      userId: user.id,
+      email: user.email,
+      exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
+    };
+    
+    return await BrowserJWT.sign(payload, JWT_SECRET);
+  },
+
+  async verifyToken(token: string): Promise<AuthTokenPayload | null> {
+    return await BrowserJWT.verify(token, JWT_SECRET);
   },
 
   async hashPassword(password: string): Promise<string> {
@@ -60,7 +140,7 @@ export const authUtils = {
     const token = this.getAuthToken();
     if (!token) return null;
 
-    const payload = this.verifyToken(token);
+    const payload = await this.verifyToken(token);
     if (!payload) {
       this.removeAuthToken();
       return null;

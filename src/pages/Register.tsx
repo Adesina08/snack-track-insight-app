@@ -74,7 +74,7 @@ const Register = () => {
       });
 
       // Generate JWT token
-      const token = authUtils.generateToken(newUser);
+      const token = await authUtils.generateToken(newUser);
       authUtils.setAuthToken(token);
 
       toast({

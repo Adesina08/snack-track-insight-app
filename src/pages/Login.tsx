@@ -50,7 +50,7 @@ const Login = () => {
       }
 
       // Generate JWT token
-      const token = authUtils.generateToken(user);
+      const token = await authUtils.generateToken(user);
       authUtils.setAuthToken(token);
 
       toast({
