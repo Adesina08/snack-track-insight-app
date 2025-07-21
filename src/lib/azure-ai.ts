@@ -31,7 +31,9 @@ export class AzureAIService {
       reader.onload = () => {
         try {
           const audioBuffer = reader.result as ArrayBuffer;
-          const audioConfig = sdk.AudioConfig.fromWavFileInput(new Uint8Array(audioBuffer));
+          // Convert ArrayBuffer to Buffer for Azure Speech SDK
+          const buffer = Buffer.from(audioBuffer);
+          const audioConfig = sdk.AudioConfig.fromWavFileInput(buffer);
           const recognizer = new sdk.SpeechRecognizer(this.speechConfig, audioConfig);
 
           recognizer.recognizeOnceAsync(
