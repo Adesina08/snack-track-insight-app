@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +7,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { dbOperations } from "@/lib/database";
+import { authUtils } from "@/lib/auth";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -48,32 +49,67 @@ const Register = () => {
 
     setIsLoading(true);
     
-    // Simulate registration API call
-    setTimeout(() => {
+    try {
+      // Check if user already exists
+      const existingUser = await dbOperations.getUserByEmail(formData.email);
+      if (existingUser) {
+        toast({
+          title: "Account exists",
+          description: "An account with this email already exists.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Hash password
+      const hashedPassword = await authUtils.hashPassword(formData.password);
+
+      // Create user in database
+      const newUser = await dbOperations.createUser({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        passwordHash: hashedPassword,
+      });
+
+      // Generate JWT token
+      const token = authUtils.generateToken(newUser);
+      authUtils.setAuthToken(token);
+
       toast({
         title: "Account created successfully!",
         description: "Welcome to SnackTrack. You can now start logging your consumption.",
       });
-      setIsLoading(false);
+      
       navigate("/dashboard");
-    }, 2000);
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        title: "Registration failed",
+        description: "An error occurred during registration. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-green-50 to-orange-100 flex items-center justify-center p-4">
+    <div className="min-h-screen gradient-secondary flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-6">
-          <Link to="/" className="flex items-center text-orange-600 hover:text-orange-700 transition-colors">
+          <Link to="/" className="flex items-center text-blue-600 hover:text-blue-700 transition-colors hover-glow">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Link>
         </div>
 
-        <Card className="bg-white/80 backdrop-blur-md border-orange-200/50 shadow-xl">
+        <Card className="glass-card hover-glow">
           <CardHeader className="text-center">
-            <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-green-500 rounded-full mx-auto mb-4"></div>
-            <CardTitle className="text-2xl font-bold text-gray-800">Create Your Account</CardTitle>
-            <p className="text-gray-600">Join the SnackTrack community</p>
+            <div className="w-12 h-12 gradient-primary rounded-full mx-auto mb-4 shadow-lg"></div>
+            <CardTitle className="text-2xl font-bold text-gradient">Create Your Account</CardTitle>
+            <p className="text-muted-foreground">Join the SnackTrack community</p>
           </CardHeader>
 
           <CardContent>
@@ -86,7 +122,7 @@ const Register = () => {
                     value={formData.firstName}
                     onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                     required
-                    className="border-orange-200 focus:border-orange-400"
+                    className="border-blue-200 focus:border-blue-400 glass-effect"
                   />
                 </div>
                 <div>
@@ -96,7 +132,7 @@ const Register = () => {
                     value={formData.lastName}
                     onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                     required
-                    className="border-orange-200 focus:border-orange-400"
+                    className="border-blue-200 focus:border-blue-400 glass-effect"
                   />
                 </div>
               </div>
@@ -109,7 +145,7 @@ const Register = () => {
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
                   required
-                  className="border-orange-200 focus:border-orange-400"
+                  className="border-blue-200 focus:border-blue-400 glass-effect"
                 />
               </div>
 
@@ -121,7 +157,7 @@ const Register = () => {
                   value={formData.phone}
                   onChange={(e) => setFormData({...formData, phone: e.target.value})}
                   required
-                  className="border-orange-200 focus:border-orange-400"
+                  className="border-blue-200 focus:border-blue-400 glass-effect"
                 />
               </div>
 
@@ -134,7 +170,7 @@ const Register = () => {
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                     required
-                    className="border-orange-200 focus:border-orange-400 pr-10"
+                    className="border-blue-200 focus:border-blue-400 pr-10 glass-effect"
                   />
                   <button
                     type="button"
@@ -155,7 +191,7 @@ const Register = () => {
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                     required
-                    className="border-orange-200 focus:border-orange-400 pr-10"
+                    className="border-blue-200 focus:border-blue-400 pr-10 glass-effect"
                   />
                   <button
                     type="button"
@@ -175,7 +211,7 @@ const Register = () => {
                     onCheckedChange={(checked) => setFormData({...formData, agreeToTerms: checked as boolean})}
                   />
                   <Label htmlFor="terms" className="text-sm">
-                    I agree to the <Link to="/terms" className="text-orange-600 hover:underline">Terms and Conditions</Link>
+                    I agree to the <Link to="/terms" className="text-blue-600 hover:underline">Terms and Conditions</Link>
                   </Label>
                 </div>
 
@@ -193,7 +229,7 @@ const Register = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-orange-500 to-green-500 hover:from-orange-600 hover:to-green-600"
+                className="w-full gradient-primary hover-glow text-white shadow-lg"
                 disabled={isLoading}
               >
                 {isLoading ? "Creating Account..." : "Create Account"}
@@ -201,9 +237,9 @@ const Register = () => {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Already have an account?{" "}
-                <Link to="/login" className="text-orange-600 hover:underline font-semibold">
+                <Link to="/login" className="text-blue-600 hover:underline font-semibold">
                   Sign in here
                 </Link>
               </p>

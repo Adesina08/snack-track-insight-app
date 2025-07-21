@@ -1,308 +1,304 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Camera, TrendingUp, Download, Eye, CheckCircle, XCircle, AlertCircle } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
+import { Badge } from "@/components/ui/badge";
+import { Users, TrendingUp, Award, Database, Download, Calendar } from "lucide-react";
+import Navigation from "@/components/Navigation";
+import { dbOperations } from "@/lib/database";
+import ActivityCalendar from 'react-activity-calendar';
+
+interface AdminStats {
+  totalUsers: number;
+  totalLogs: number;
+  totalPoints: number;
+  recentActivity: any[];
+}
+
+interface ActivityData {
+  date: string;
+  count: number;
+  level: 0 | 1 | 2 | 3 | 4;
+}
 
 const AdminDashboard = () => {
-  const [submissions] = useState([
-    {
-      id: 1,
-      user: "Sarah Wilson",
-      product: "Coca-Cola",
-      category: "Beverages",
-      time: "2 hours ago",
-      status: "approved",
-      hasMedia: true,
-      aiConfidence: 94,
-      location: "Mall Food Court"
-    },
-    {
-      id: 2,
-      user: "Mike Johnson",
-      product: "Lay's Chips",
-      category: "Snacks",
-      time: "4 hours ago",
-      status: "pending",
-      hasMedia: false,
-      aiConfidence: null,
-      location: "Office"
-    },
-    {
-      id: 3,
-      user: "Alex Kumar",
-      product: "Maggi Noodles",
-      category: "Noodles",
-      time: "1 day ago",
-      status: "flagged",
-      hasMedia: true,
-      aiConfidence: 67,
-      location: "Home"
-    }
-  ]);
+  const [stats, setStats] = useState<AdminStats>({
+    totalUsers: 0,
+    totalLogs: 0,
+    totalPoints: 0,
+    recentActivity: []
+  });
+  const [activityData, setActivityData] = useState<ActivityData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const dailySubmissions = [
-    { date: '2024-01-15', submissions: 45 },
-    { date: '2024-01-16', submissions: 52 },
-    { date: '2024-01-17', submissions: 38 },
-    { date: '2024-01-18', submissions: 67 },
-    { date: '2024-01-19', submissions: 58 },
-    { date: '2024-01-20', submissions: 72 },
-    { date: '2024-01-21', submissions: 84 }
-  ];
+  useEffect(() => {
+    loadAdminData();
+  }, []);
 
-  const categoryData = [
-    { name: 'Beverages', value: 35, color: '#f97316' },
-    { name: 'Snacks', value: 28, color: '#22c55e' },
-    { name: 'Noodles', value: 20, color: '#3b82f6' },
-    { name: 'Dairy', value: 12, color: '#a855f7' },
-    { name: 'Others', value: 5, color: '#6b7280' }
-  ];
+  const loadAdminData = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Load consumption logs for analytics
+      const logs = await dbOperations.getAllConsumptionLogs();
+      const analytics = await dbOperations.getConsumptionAnalytics();
+      
+      // Calculate stats
+      const totalLogs = logs.length;
+      const totalPoints = logs.reduce((sum, log) => sum + (log.points || 0), 0);
+      const uniqueUsers = new Set(logs.map(log => log.userId)).size;
+      
+      setStats({
+        totalUsers: uniqueUsers,
+        totalLogs,
+        totalPoints,
+        recentActivity: logs.slice(0, 10)
+      });
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return <Badge className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" />Approved</Badge>;
-      case 'pending':
-        return <Badge variant="secondary"><AlertCircle className="h-3 w-3 mr-1" />Pending</Badge>;
-      case 'flagged':
-        return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Flagged</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+      // Generate activity heatmap data (last 365 days)
+      const heatmapData = generateActivityHeatmap(analytics);
+      setActivityData(heatmapData);
+      
+    } catch (error) {
+      console.error('Error loading admin data:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-green-50 to-orange-100">
-      {/* Admin Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-orange-200/50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-green-500 rounded-full"></div>
-              <h1 className="text-2xl font-bold text-gray-800">SnackTrack Admin</h1>
-            </div>
-            <Badge className="bg-purple-500">Admin Panel</Badge>
+  const generateActivityHeatmap = (analytics: any[]): ActivityData[] => {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 365);
+    
+    const activityMap = new Map<string, number>();
+    
+    // Count activities per day
+    analytics.forEach(log => {
+      const date = new Date(log.createdAt).toISOString().split('T')[0];
+      activityMap.set(date, (activityMap.get(date) || 0) + 1);
+    });
+    
+    // Generate data for each day
+    const data: ActivityData[] = [];
+    const currentDate = new Date(startDate);
+    
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      const count = activityMap.get(dateStr) || 0;
+      
+      // Convert count to level (0-4)
+      let level: 0 | 1 | 2 | 3 | 4 = 0;
+      if (count > 0) level = 1;
+      if (count > 2) level = 2;
+      if (count > 5) level = 3;
+      if (count > 10) level = 4;
+      
+      data.push({
+        date: dateStr,
+        count,
+        level
+      });
+      
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return data;
+  };
+
+  const exportData = async () => {
+    try {
+      const logs = await dbOperations.getAllConsumptionLogs();
+      const csvContent = [
+        'Date,User,Product,Brand,Category,Spend,Method,Points',
+        ...logs.map(log => [
+          new Date(log.createdAt).toLocaleDateString(),
+          `${log.users?.firstName} ${log.users?.lastName}`,
+          log.product,
+          log.brand || '',
+          log.category,
+          log.spend || 0,
+          log.captureMethod,
+          log.points
+        ].join(','))
+      ].join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `consumption-logs-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export failed:', error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen gradient-secondary">
+        <Navigation />
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         </div>
-      </header>
+      </div>
+    );
+  }
 
+  return (
+    <div className="min-h-screen gradient-secondary pb-20 lg:pb-0">
+      <Navigation />
+      
       <div className="container mx-auto px-4 py-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">Monitor user activity and manage the platform</p>
-        </div>
-
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/80 backdrop-blur-sm border-orange-200/50">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
-                  <p className="text-2xl font-bold text-blue-600">2,847</p>
-                  <p className="text-xs text-green-600">+12% this month</p>
-                </div>
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                  <Users className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm border-green-200/50">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Today's Submissions</p>
-                  <p className="text-2xl font-bold text-green-600">84</p>
-                  <p className="text-xs text-green-600">+8% from yesterday</p>
-                </div>
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm border-purple-200/50">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Media Uploads</p>
-                  <p className="text-2xl font-bold text-purple-600">1,234</p>
-                  <p className="text-xs text-green-600">68% with media</p>
-                </div>
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <Camera className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm border-orange-200/50">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Pending Review</p>
-                  <p className="text-2xl font-bold text-orange-600">23</p>
-                  <p className="text-xs text-orange-600">Needs attention</p>
-                </div>
-                <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
-                  <AlertCircle className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="submissions">Recent Submissions</TabsTrigger>
-            <TabsTrigger value="export">Export Data</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="analytics">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Daily Submissions Chart */}
-              <Card className="bg-white/80 backdrop-blur-sm border-orange-200/50">
-                <CardHeader>
-                  <CardTitle>Daily Submissions (Last 7 Days)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={dailySubmissions}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="submissions" stroke="#f97316" strokeWidth={3} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              {/* Category Distribution */}
-              <Card className="bg-white/80 backdrop-blur-sm border-orange-200/50">
-                <CardHeader>
-                  <CardTitle>Category Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={categoryData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {categoryData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gradient mb-2">Admin Dashboard</h1>
+              <p className="text-muted-foreground">Monitor app activity and user engagement</p>
             </div>
-          </TabsContent>
+            <Button onClick={exportData} className="gradient-primary hover-glow text-white">
+              <Download className="h-4 w-4 mr-2" />
+              Export Data
+            </Button>
+          </div>
+        </div>
 
-          <TabsContent value="submissions">
-            <Card className="bg-white/80 backdrop-blur-sm border-orange-200/50">
-              <CardHeader>
-                <CardTitle>Recent Submissions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {submissions.map((submission) => (
-                    <div key={submission.id} className="flex items-center justify-between p-4 bg-gray-50/50 rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-green-400 rounded-lg flex items-center justify-center">
-                          {submission.hasMedia ? <Camera className="h-5 w-5 text-white" /> : <Eye className="h-5 w-5 text-white" />}
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-800">{submission.product}</h4>
-                          <div className="flex items-center space-x-4 text-sm text-gray-600">
-                            <span>by {submission.user}</span>
-                            <span>{submission.location}</span>
-                            <span>{submission.time}</span>
-                            {submission.aiConfidence && (
-                              <span className="text-blue-600">AI: {submission.aiConfidence}%</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        {getStatusBadge(submission.status)}
-                        <Button size="sm" variant="outline">
-                          Review
-                        </Button>
-                      </div>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="glass-card hover-glow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Users</p>
+                  <p className="text-2xl font-bold text-gradient">{stats.totalUsers}</p>
+                </div>
+                <Users className="h-8 w-8 text-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-card hover-glow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Logs</p>
+                  <p className="text-2xl font-bold text-gradient">{stats.totalLogs}</p>
+                </div>
+                <Database className="h-8 w-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-card hover-glow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Points</p>
+                  <p className="text-2xl font-bold text-gradient">{stats.totalPoints}</p>
+                </div>
+                <Award className="h-8 w-8 text-yellow-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-card hover-glow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Avg/User</p>
+                  <p className="text-2xl font-bold text-gradient">
+                    {stats.totalUsers > 0 ? Math.round(stats.totalLogs / stats.totalUsers) : 0}
+                  </p>
+                </div>
+                <TrendingUp className="h-8 w-8 text-purple-500" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Activity Heatmap */}
+        <Card className="glass-card hover-glow mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Calendar className="h-5 w-5 mr-2 text-blue-500" />
+              Activity Heatmap (Last 365 Days)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <ActivityCalendar
+                data={activityData}
+                theme={{
+                  light: ['#f0f9ff', '#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8'],
+                  dark: ['#1e293b', '#334155', '#475569', '#64748b', '#94a3b8']
+                }}
+                fontSize={12}
+                blockSize={12}
+                blockMargin={2}
+                showWeekdayLabels
+                renderBlock={(block, activity) => (
+                  <div
+                    title={`${activity.date}: ${activity.count} logs`}
+                    style={{
+                      backgroundColor: block.backgroundColor,
+                      borderRadius: '2px'
+                    }}
+                  />
+                )}
+              />
+            </div>
+            <div className="flex items-center justify-between mt-4 text-sm text-muted-foreground">
+              <span>Less</span>
+              <div className="flex items-center space-x-1">
+                {[0, 1, 2, 3, 4].map(level => (
+                  <div
+                    key={level}
+                    className="w-3 h-3 rounded-sm"
+                    style={{
+                      backgroundColor: ['#f0f9ff', '#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8'][level]
+                    }}
+                  />
+                ))}
+              </div>
+              <span>More</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity */}
+        <Card className="glass-card hover-glow">
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {stats.recentActivity.map((log, index) => (
+                <div key={index} className="flex items-center justify-between p-4 glass-effect rounded-lg">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center">
+                      <Database className="h-5 w-5 text-white" />
                     </div>
-                  ))}
+                    <div>
+                      <p className="font-medium">{log.users?.firstName} {log.users?.lastName}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Logged {log.product} • {log.category}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant={log.captureMethod === 'ai' ? 'default' : 'secondary'}>
+                      {log.captureMethod}
+                    </Badge>
+                    <span className="text-sm font-medium text-green-600">+{log.points} pts</span>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="export">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-white/80 backdrop-blur-sm border-orange-200/50">
-                <CardHeader>
-                  <CardTitle>User Data Export</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-600">Export user consumption data and analytics</p>
-                  <div className="space-y-2">
-                    <Button className="w-full bg-gradient-to-r from-orange-500 to-green-500">
-                      <Download className="h-4 w-4 mr-2" />
-                      Export All Users (CSV)
-                    </Button>
-                    <Button variant="outline" className="w-full">
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Last 30 Days (Excel)
-                    </Button>
-                    <Button variant="outline" className="w-full">
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Analytics (PDF)
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/80 backdrop-blur-sm border-orange-200/50">
-                <CardHeader>
-                  <CardTitle>Media Archive</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-600">Download user-submitted media files</p>
-                  <div className="space-y-2">
-                    <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-500">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download All Media (ZIP)
-                    </Button>
-                    <Button variant="outline" className="w-full">
-                      <Download className="h-4 w-4 mr-2" />
-                      Photos Only (ZIP)
-                    </Button>
-                    <Button variant="outline" className="w-full">
-                      <Download className="h-4 w-4 mr-2" />
-                      Videos Only (ZIP)
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              ))}
             </div>
-          </TabsContent>
-        </Tabs>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
