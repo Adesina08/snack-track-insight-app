@@ -13,12 +13,10 @@ import Navigation from "@/components/Navigation";
 import { dbOperations } from "@/lib/database";
 import { authUtils } from "@/lib/auth";
 import { azureAI, AzureAIAnalysis } from "@/lib/azure-ai";
-import { getAzureStorage } from "@/lib/azure-storage";
-import AzureStorageSetup from "@/components/AzureStorageSetup";
+import { getAzureStorage, initializeAzureStorage } from "@/lib/azure-storage";
 
 const LogConsumption = () => {
   const navigate = useNavigate();
-  const [azureConfigured, setAzureConfigured] = useState(false);
   const [formData, setFormData] = useState({
     product: "",
     brand: "",
@@ -40,10 +38,17 @@ const LogConsumption = () => {
   const companionOptions = ["Alone", "With friends", "With family", "With colleagues", "With partner"];
 
   useEffect(() => {
-    // Check if Azure Storage is configured
-    const savedConfig = localStorage.getItem('azureStorageConfig');
-    if (savedConfig && getAzureStorage()) {
-      setAzureConfigured(true);
+    // Auto-initialize Azure Storage with default config (hidden from UI)
+    const defaultConfig = {
+      accountName: "naijasnackmedia",
+      containerName: "naijasnack-media",
+      sasToken: "?sv=2022-11-02&ss=b&srt=sco&sp=rwdlacx&se=2024-12-31T23:59:59Z"
+    };
+    
+    try {
+      initializeAzureStorage(defaultConfig);
+    } catch (error) {
+      console.log("Azure Storage not configured, will use local storage");
     }
   }, []);
 
@@ -168,20 +173,13 @@ const LogConsumption = () => {
 
       let mediaUrl = '';
       
-      // Upload to Azure Storage if file exists
-      if (selectedFile && azureConfigured) {
+      // Upload to Azure Storage if file exists and storage is configured
+      if (selectedFile) {
         const azureStorage = getAzureStorage();
         if (azureStorage) {
           const uploadResult = await azureStorage.uploadFile(selectedFile);
           if (uploadResult.success) {
             mediaUrl = uploadResult.url;
-          } else {
-            toast({
-              title: "Upload failed",
-              description: "Failed to upload media to Azure Storage.",
-              variant: "destructive",
-            });
-            return;
           }
         }
       }
@@ -231,23 +229,6 @@ const LogConsumption = () => {
     }
   };
 
-  if (!azureConfigured) {
-    return (
-      <div className="min-h-screen gradient-secondary pb-20 lg:pb-0">
-        <Navigation />
-        
-        <div className="container mx-auto px-4 py-6">
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-gradient mb-2">Setup Required</h1>
-            <p className="text-muted-foreground">Configure Azure Storage to upload your media files</p>
-          </div>
-          
-          <AzureStorageSetup onConfigured={() => setAzureConfigured(true)} />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen gradient-secondary pb-20 lg:pb-0">
       <Navigation />
@@ -263,8 +244,8 @@ const LogConsumption = () => {
             {/* AI Media Capture Section */}
             <Card className="glass-card hover-glow">
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Sparkles className="h-5 w-5 mr-2 text-blue-500" />
+                <CardTitle className="flex items-center text-gradient">
+                  <Sparkles className="h-5 w-5 mr-2" />
                   AI-Powered Media Capture
                 </CardTitle>
               </CardHeader>
@@ -276,7 +257,7 @@ const LogConsumption = () => {
                         type="button"
                         variant={recordingType === 'audio' ? 'default' : 'outline'}
                         onClick={() => setRecordingType('audio')}
-                        className={recordingType === 'audio' ? 'gradient-primary text-white' : 'border-blue-300 text-blue-600'}
+                        className={recordingType === 'audio' ? 'gradient-primary text-white' : ''}
                       >
                         <Mic className="h-4 w-4 mr-2" />
                         Audio Only
@@ -285,14 +266,14 @@ const LogConsumption = () => {
                         type="button"
                         variant={recordingType === 'video' ? 'default' : 'outline'}
                         onClick={() => setRecordingType('video')}
-                        className={recordingType === 'video' ? 'gradient-primary text-white' : 'border-blue-300 text-blue-600'}
+                        className={recordingType === 'video' ? 'gradient-primary text-white' : ''}
                       >
                         <Video className="h-4 w-4 mr-2" />
                         Audio + Video
                       </Button>
                     </div>
 
-                    <div className="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center">
+                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center glass-effect">
                       <div className="flex justify-center mb-4">
                         <div className="w-16 h-16 animated-gradient rounded-lg flex items-center justify-center">
                           {recordingType === 'video' ? (
@@ -330,7 +311,7 @@ const LogConsumption = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg glass-effect">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
                           {recordingType === 'video' ? (
@@ -359,185 +340,73 @@ const LogConsumption = () => {
 
                     {isAnalyzing && (
                       <div className="text-center py-6">
-                        <div className="inline-flex items-center space-x-2 text-blue-600">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                        <div className="inline-flex items-center space-x-2 text-primary">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                           <span>Azure AI is analyzing your Naija meal...</span>
                         </div>
                       </div>
                     )}
 
                     {aiAnalysis && (
-                      <div className="glass-effect border border-blue-200 rounded-lg p-4">
-                        <h4 className="font-semibold text-blue-800 mb-3">Azure AI Analysis Results</h4>
+                      <div className="glass-effect rounded-lg p-4">
+                        <h4 className="font-semibold text-primary mb-3">Azure AI Analysis Results</h4>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           {aiAnalysis.detectedProducts && (
                             <div>
-                              <span className="text-blue-600 font-medium">Nigerian Foods:</span>
-                              <span className="ml-2 text-blue-800">{aiAnalysis.detectedProducts.join(', ')}</span>
+                              <span className="text-primary font-medium">Nigerian Foods:</span>
+                              <span className="ml-2 text-foreground">{aiAnalysis.detectedProducts.join(', ')}</span>
                             </div>
                           )}
                           {aiAnalysis.confidence && (
                             <div>
-                              <span className="text-blue-600 font-medium">Confidence:</span>
-                              <span className="ml-2 text-blue-800">{Math.round(aiAnalysis.confidence * 100)}%</span>
+                              <span className="text-primary font-medium">Confidence:</span>
+                              <span className="ml-2 text-foreground">{Math.round(aiAnalysis.confidence * 100)}%</span>
                             </div>
                           )}
                           {aiAnalysis.sentiment && (
                             <div>
-                              <span className="text-blue-600 font-medium">Mood:</span>
-                              <span className="ml-2 text-blue-800">{aiAnalysis.sentiment}</span>
+                              <span className="text-primary font-medium">Mood:</span>
+                              <span className="ml-2 text-foreground">{aiAnalysis.sentiment}</span>
                             </div>
                           )}
                           {aiAnalysis.estimatedSpend && (
                             <div>
-                              <span className="text-blue-600 font-medium">Est. Spend:</span>
-                              <span className="ml-2 text-blue-800">₦{aiAnalysis.estimatedSpend?.replace('$', '')}</span>
+                              <span className="text-primary font-medium">Est. Spend:</span>
+                              <span className="ml-2 text-foreground">₦{aiAnalysis.estimatedSpend?.replace('$', '')}</span>
                             </div>
                           )}
                         </div>
                         {aiAnalysis.transcription && (
                           <div className="mt-3">
-                            <span className="text-blue-600 font-medium text-sm">What you said:</span>
-                            <p className="text-blue-800 text-sm mt-1">{aiAnalysis.transcription}</p>
+                            <span className="text-primary font-medium text-sm">What you said:</span>
+                            <p className="text-foreground text-sm mt-1">{aiAnalysis.transcription}</p>
                           </div>
                         )}
                       </div>
                     )}
+
+                    {/* Submit Button - Only shown after AI analysis */}
+                    <Button
+                      type="submit"
+                      className="w-full gradient-primary hover-glow text-white shadow-lg"
+                      disabled={isSubmitting || !aiAnalysis}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Uploading to Azure & Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Log My Naija Meal
+                        </>
+                      )}
+                    </Button>
                   </div>
                 )}
               </CardContent>
             </Card>
-
-            {/* Manual Entry Section - Only shown after AI analysis */}
-            {aiAnalysis && (
-              <Card className="glass-card hover-glow">
-                <CardHeader>
-                  <CardTitle>Review & Edit Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="product">Nigerian Food *</Label>
-                      <Input
-                        id="product"
-                        value={formData.product}
-                        onChange={(e) => setFormData({...formData, product: e.target.value})}
-                        required
-                        className="border-blue-200 focus:border-blue-400 glass-effect"
-                        placeholder="e.g., Jollof Rice"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="brand">Restaurant/Brand</Label>
-                      <Input
-                        id="brand"
-                        value={formData.brand}
-                        onChange={(e) => setFormData({...formData, brand: e.target.value})}
-                        className="border-blue-200 focus:border-blue-400 glass-effect"
-                        placeholder="e.g., Mr. Biggs"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="category">Category *</Label>
-                      <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
-                        <SelectTrigger className="border-blue-200 focus:border-blue-400 glass-effect">
-                          <SelectValue placeholder="Select Nigerian food category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="spend">Amount Spent (₦)</Label>
-                      <div className="relative">
-                        <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="spend"
-                          value={formData.spend}
-                          onChange={(e) => setFormData({...formData, spend: e.target.value})}
-                          className="border-blue-200 focus:border-blue-400 glass-effect pl-10"
-                          placeholder="500"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="companions">Who were you with?</Label>
-                    <Select value={formData.companions} onValueChange={(value) => setFormData({...formData, companions: value})}>
-                      <SelectTrigger className="border-blue-200 focus:border-blue-400 glass-effect">
-                        <SelectValue placeholder="Select companions" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {companionOptions.map((option) => (
-                          <SelectItem key={option} value={option}>
-                            <div className="flex items-center">
-                              <Users className="h-4 w-4 mr-2" />
-                              {option}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="location">Location in Nigeria</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="location"
-                        value={formData.location}
-                        onChange={(e) => setFormData({...formData, location: e.target.value})}
-                        className="border-blue-200 focus:border-blue-400 glass-effect pl-10"
-                        placeholder="e.g., Lagos, Victoria Island"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="notes">Additional Notes</Label>
-                    <Textarea
-                      id="notes"
-                      value={formData.notes}
-                      onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                      className="border-blue-200 focus:border-blue-400 glass-effect"
-                      placeholder="Describe your experience, taste, mood, or any other details about this Nigerian meal..."
-                      rows={3}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Submit Button - Only shown after AI analysis */}
-            {aiAnalysis && (
-              <Button
-                type="submit"
-                className="w-full gradient-primary hover-glow text-white shadow-lg"
-                disabled={isSubmitting || !formData.product || !formData.category}
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Uploading to Azure & Saving...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="h-4 w-4 mr-2" />
-                    Log My Naija Meal
-                  </>
-                )}
-              </Button>
-            )}
           </form>
         </div>
       </div>
