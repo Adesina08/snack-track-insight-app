@@ -6,6 +6,7 @@ const JWT_SECRET = import.meta.env.VITE_JWT_SECRET || 'your-jwt-secret-key';
 export interface AuthTokenPayload {
   userId: string;
   email: string;
+  isAdmin?: boolean;
   exp: number;
 }
 
@@ -100,10 +101,15 @@ export const authUtils = {
     const payload = {
       userId: user.id,
       email: user.email,
+      isAdmin: user.email === 'admin@naijasnacktrack.com', // Admin check
       exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
     };
     
     return await BrowserJWT.sign(payload, JWT_SECRET);
+  },
+
+  isAdminUser(user: User): boolean {
+    return user.email === 'admin@naijasnacktrack.com';
   },
 
   async verifyToken(token: string): Promise<AuthTokenPayload | null> {

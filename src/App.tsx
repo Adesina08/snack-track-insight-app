@@ -12,6 +12,7 @@ import LogConsumption from "./pages/LogConsumption";
 import Rewards from "./pages/Rewards";
 import AdminDashboard from "./pages/AdminDashboard";
 import Profile from "./pages/Profile";
+import TermsAndConditions from "./pages/TermsAndConditions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/rewards" element={<Rewards />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/terms" element={<TermsAndConditions />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

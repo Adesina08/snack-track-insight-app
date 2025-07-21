@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Home, Plus, Gift, User, BarChart3, Menu, LogOut } from "lucide-react";
@@ -11,6 +11,18 @@ const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
+
+  const checkAdminStatus = async () => {
+    const user = await authUtils.getCurrentUser();
+    if (user) {
+      setIsAdmin(authUtils.isAdminUser(user));
+    }
+  };
 
   const handleLogout = () => {
     authUtils.removeAuthToken();
@@ -21,13 +33,14 @@ const Navigation = () => {
     navigate("/");
   };
 
-  const navItems = [
-    { icon: Home, label: "Dashboard", path: "/dashboard" },
-    { icon: Plus, label: "Log Consumption", path: "/log" },
-    { icon: Gift, label: "Rewards", path: "/rewards" },
-    { icon: BarChart3, label: "Admin", path: "/admin" },
-    { icon: User, label: "Profile", path: "/profile" },
-  ];
+  const navItems = isAdmin 
+    ? [{ icon: BarChart3, label: "Admin Dashboard", path: "/admin" }]
+    : [
+        { icon: Home, label: "Dashboard", path: "/dashboard" },
+        { icon: Plus, label: "Log Consumption", path: "/log" },
+        { icon: Gift, label: "Rewards", path: "/rewards" },
+        { icon: User, label: "Profile", path: "/profile" },
+      ];
 
   const NavLink = ({ item, onClick }: { item: typeof navItems[0], onClick?: () => void }) => {
     const isActive = location.pathname === item.path;

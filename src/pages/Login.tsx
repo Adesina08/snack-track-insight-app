@@ -58,7 +58,12 @@ const Login = () => {
         description: "You have successfully logged in to SnackTrack.",
       });
       
-      navigate("/dashboard");
+      // Navigate based on user type
+      if (authUtils.isAdminUser(user)) {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error) {
       console.error('Login error:', error);
       toast({

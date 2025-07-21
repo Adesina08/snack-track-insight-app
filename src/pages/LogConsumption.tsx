@@ -14,6 +14,8 @@ import { dbOperations } from "@/lib/database";
 import { authUtils } from "@/lib/auth";
 import { azureAI, AzureAIAnalysis } from "@/lib/azure-ai";
 import { getAzureStorage, initializeAzureStorage } from "@/lib/azure-storage";
+import { MediaCompressor } from "@/lib/media-compression";
+import { LocationService, LocationData } from "@/lib/location";
 
 const LogConsumption = () => {
   const navigate = useNavigate();
@@ -33,6 +35,7 @@ const LogConsumption = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordingType, setRecordingType] = useState<'audio' | 'video'>('audio');
+  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
 
   const categories = ["Jollof Rice", "Suya", "Pounded Yam", "Egusi", "Pepper Soup", "Chin Chin", "Plantain", "Akara", "Moi Moi", "Other"];
   const companionOptions = ["Alone", "With friends", "With family", "With colleagues", "With partner"];
@@ -50,7 +53,20 @@ const LogConsumption = () => {
     } catch (error) {
       console.log("Azure Storage not configured, will use local storage");
     }
+
+    // Get location when component mounts
+    getCurrentLocation();
   }, []);
+
+  const getCurrentLocation = async () => {
+    try {
+      const location = await LocationService.getCurrentLocation();
+      setCurrentLocation(location);
+    } catch (error) {
+      console.warn('Could not get location:', error);
+      // Continue without location
+    }
+  };
 
   const startRecording = async () => {
     try {
@@ -173,11 +189,24 @@ const LogConsumption = () => {
 
       let mediaUrl = '';
       
-      // Upload to Azure Storage if file exists and storage is configured
+      // Compress and upload to Azure Storage if file exists and storage is configured
       if (selectedFile) {
         const azureStorage = getAzureStorage();
         if (azureStorage) {
-          const uploadResult = await azureStorage.uploadFile(selectedFile);
+          let fileToUpload = selectedFile;
+          
+          // Compress media before upload
+          if (selectedFile.type.startsWith('image/')) {
+            if (MediaCompressor.needsCompression(selectedFile, 2)) {
+              fileToUpload = await MediaCompressor.compressImage(selectedFile, 0.7, 800);
+            }
+          } else if (selectedFile.type.startsWith('video/')) {
+            if (MediaCompressor.needsCompression(selectedFile, 10)) {
+              fileToUpload = await MediaCompressor.compressVideo(selectedFile);
+            }
+          }
+          
+          const uploadResult = await azureStorage.uploadFile(fileToUpload);
           if (uploadResult.success) {
             mediaUrl = uploadResult.url;
           }
@@ -199,7 +228,7 @@ const LogConsumption = () => {
         category: formData.category,
         spend: formData.spend ? parseFloat(formData.spend.replace('₦', '')) : undefined,
         companions: formData.companions,
-        location: formData.location,
+        location: currentLocation ? LocationService.formatLocation(currentLocation) : formData.location,
         notes: formData.notes,
         mediaUrl,
         mediaType: selectedFile?.type.startsWith('video/') ? 'video' as const : 'audio' as const,

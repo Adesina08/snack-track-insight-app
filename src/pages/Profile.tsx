@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,27 +10,100 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Mail, Phone, MapPin, Bell, Camera, Star, TrendingUp } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
+import { authUtils } from "@/lib/auth";
+import { User as UserType } from "@/lib/database";
+import { NotificationService, NotificationPreferences } from "@/lib/notifications";
 
 const Profile = () => {
-  const [profileData, setProfileData] = useState({
-    firstName: "Adunni",
-    lastName: "Okafor",
-    email: "adunni.okafor@email.com",
-    phone: "+234 803 123 4567",
-    location: "Lagos, Nigeria"
+  const [user, setUser] = useState<UserType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    phone: ''
+  });
+  const [notifications, setNotifications] = useState<NotificationPreferences>({
+    enableNotifications: true,
+    dailyReminders: true,
+    weeklyReports: false,
+    achievementAlerts: true,
+    marketingEmails: false
   });
 
-  const [notifications, setNotifications] = useState({
-    pushNotifications: true,
-    emailUpdates: true,
-    weeklyReport: false,
-    rewardAlerts: true
-  });
+  useEffect(() => {
+    loadUserData();
+    loadNotificationPreferences();
+  }, []);
 
-  const handleSaveProfile = () => {
+  const loadUserData = async () => {
+    try {
+      const currentUser = await authUtils.getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+        setFormData({
+          firstName: currentUser.firstName,
+          lastName: currentUser.lastName,
+          phone: currentUser.phone || ''
+        });
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadNotificationPreferences = () => {
+    const prefs = NotificationService.loadPreferences();
+    setNotifications(prefs);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    
+    setIsSaving(true);
+    try {
+      // Update user profile in database
+      const updatedUser = {
+        ...user,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone
+      };
+      
+      // In a real app, you'd have an updateUser function in dbOperations
+      // For now, we'll simulate the update
+      setUser(updatedUser);
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Update failed",
+        description: "Could not update your profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleNotificationChange = (key: keyof NotificationPreferences, value: boolean) => {
+    const updatedPrefs = { ...notifications, [key]: value };
+    setNotifications(updatedPrefs);
+    NotificationService.savePreferences(updatedPrefs);
+    
+    if (key === 'enableNotifications' && value) {
+      NotificationService.requestPermission();
+    }
+    
     toast({
-      title: "Profile updated successfully!",
-      description: "Your profile information has been saved.",
+      title: "Preferences updated",
+      description: "Your notification preferences have been saved.",
     });
   };
 
@@ -76,9 +149,9 @@ const Profile = () => {
                     </button>
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-1">
-                    {profileData.firstName} {profileData.lastName}
+                    {user?.firstName} {user?.lastName}
                   </h3>
-                  <p className="text-muted-foreground mb-4">{profileData.email}</p>
+                  <p className="text-muted-foreground mb-4">{user?.email}</p>
                   <Badge className="gradient-primary text-white">
                     Active Naija Foodie
                   </Badge>
@@ -123,8 +196,8 @@ const Profile = () => {
                       <Label htmlFor="firstName">First Name</Label>
                       <Input
                         id="firstName"
-                        value={profileData.firstName}
-                        onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
+                        value={formData.firstName}
+                        onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                         className="glass-effect"
                       />
                     </div>
@@ -132,8 +205,8 @@ const Profile = () => {
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input
                         id="lastName"
-                        value={profileData.lastName}
-                        onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
+                        value={formData.lastName}
+                        onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                         className="glass-effect"
                       />
                     </div>
@@ -146,9 +219,9 @@ const Profile = () => {
                       <Input
                         id="email"
                         type="email"
-                        value={profileData.email}
-                        onChange={(e) => setProfileData({...profileData, email: e.target.value})}
-                        className="glass-effect pl-10"
+                        value={user?.email || ''}
+                        disabled
+                        className="glass-effect pl-10 opacity-60"
                       />
                     </div>
                   </div>
@@ -160,8 +233,8 @@ const Profile = () => {
                       <Input
                         id="phone"
                         type="tel"
-                        value={profileData.phone}
-                        onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+                        value={formData.phone}
+                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
                         className="glass-effect pl-10"
                       />
                     </div>
@@ -173,15 +246,19 @@ const Profile = () => {
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="location"
-                        value={profileData.location}
-                        onChange={(e) => setProfileData({...profileData, location: e.target.value})}
-                        className="glass-effect pl-10"
+                        value="Nigeria" 
+                        disabled
+                        className="glass-effect pl-10 opacity-60"
                       />
                     </div>
                   </div>
 
-                  <Button onClick={handleSaveProfile} className="gradient-primary hover-glow text-white">
-                    Save Changes
+                  <Button 
+                    onClick={handleSaveProfile} 
+                    disabled={isSaving}
+                    className="gradient-primary hover-glow text-white"
+                  >
+                    {isSaving ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </CardContent>
               </Card>
@@ -197,45 +274,56 @@ const Profile = () => {
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-foreground">Push Notifications</p>
-                      <p className="text-sm text-muted-foreground">Receive reminders and updates</p>
+                      <p className="font-medium text-foreground">Enable Notifications</p>
+                      <p className="text-sm text-muted-foreground">Allow app to send notifications</p>
                     </div>
                     <Switch
-                      checked={notifications.pushNotifications}
-                      onCheckedChange={(checked) => setNotifications({...notifications, pushNotifications: checked})}
+                      checked={notifications.enableNotifications}
+                      onCheckedChange={(checked) => handleNotificationChange('enableNotifications', checked)}
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-foreground">Email Updates</p>
-                      <p className="text-sm text-muted-foreground">Get news and feature updates via email</p>
+                      <p className="font-medium text-foreground">Daily Reminders</p>
+                      <p className="text-sm text-muted-foreground">Get daily meal logging reminders</p>
                     </div>
                     <Switch
-                      checked={notifications.emailUpdates}
-                      onCheckedChange={(checked) => setNotifications({...notifications, emailUpdates: checked})}
+                      checked={notifications.dailyReminders}
+                      onCheckedChange={(checked) => handleNotificationChange('dailyReminders', checked)}
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-foreground">Weekly Report</p>
+                      <p className="font-medium text-foreground">Weekly Reports</p>
                       <p className="text-sm text-muted-foreground">Receive weekly consumption insights</p>
                     </div>
                     <Switch
-                      checked={notifications.weeklyReport}
-                      onCheckedChange={(checked) => setNotifications({...notifications, weeklyReport: checked})}
+                      checked={notifications.weeklyReports}
+                      onCheckedChange={(checked) => handleNotificationChange('weeklyReports', checked)}
                     />
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-foreground">Reward Alerts</p>
-                      <p className="text-sm text-muted-foreground">Get notified about new Nigerian rewards and achievements</p>
+                      <p className="font-medium text-foreground">Achievement Alerts</p>
+                      <p className="text-sm text-muted-foreground">Get notified about new achievements</p>
                     </div>
                     <Switch
-                      checked={notifications.rewardAlerts}
-                      onCheckedChange={(checked) => setNotifications({...notifications, rewardAlerts: checked})}
+                      checked={notifications.achievementAlerts}
+                      onCheckedChange={(checked) => handleNotificationChange('achievementAlerts', checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-foreground">Marketing Emails</p>
+                      <p className="text-sm text-muted-foreground">Receive promotional content and updates</p>
+                    </div>
+                    <Switch
+                      checked={notifications.marketingEmails}
+                      onCheckedChange={(checked) => handleNotificationChange('marketingEmails', checked)}
                     />
                   </div>
                 </CardContent>
