@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, TrendingUp, Award, Database, Download, Calendar } from "lucide-react";
 import Navigation from "@/components/Navigation";
-import { dbOperations } from "@/lib/database";
+import { dbOperations } from "@/lib/azure-database";
 import ActivityCalendar from 'react-activity-calendar';
 
 interface AdminStats {

@@ -11,7 +11,7 @@ import { User, Mail, Phone, MapPin, Bell, Camera, Star, TrendingUp } from "lucid
 import { toast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import { authUtils } from "@/lib/auth";
-import { User as UserType } from "@/lib/database";
+import { User as UserType } from "@/lib/azure-database";
 import { NotificationService, NotificationPreferences } from "@/lib/notifications";
 
 const Profile = () => {

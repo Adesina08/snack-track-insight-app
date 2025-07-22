@@ -1,5 +1,5 @@
 
-import { dbOperations, User } from './database';
+import { dbOperations, User } from './azure-database';
 
 const JWT_SECRET = import.meta.env.VITE_JWT_SECRET || 'your-jwt-secret-key';
 
@@ -101,7 +101,7 @@ export const authUtils = {
     const payload = {
       userId: user.id,
       email: user.email,
-      isAdmin: user.email === 'admin@naijasnacktrack.com', // Admin check
+      isAdmin: user.email === 'admin@inicio-insights.com', // Admin check
       exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
     };
     
@@ -109,7 +109,7 @@ export const authUtils = {
   },
 
   isAdminUser(user: User): boolean {
-    return user.email === 'admin@naijasnacktrack.com';
+    return user.email === 'admin@inicio-insights.com';
   },
 
   async verifyToken(token: string): Promise<AuthTokenPayload | null> {

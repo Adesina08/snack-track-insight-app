@@ -10,7 +10,7 @@ import { Mic, Video, MapPin, Users, DollarSign, Sparkles, Zap, Upload } from "lu
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
-import { dbOperations } from "@/lib/database";
+import { dbOperations } from "@/lib/azure-database";
 import { authUtils } from "@/lib/auth";
 import { azureAI, AzureAIAnalysis } from "@/lib/azure-ai";
 import { getAzureStorage, initializeAzureStorage } from "@/lib/azure-storage";
