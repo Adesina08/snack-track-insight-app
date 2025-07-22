@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-import { dbOperations } from "@/lib/azure-database";
+import { azureDbOperations as dbOperations } from "@/lib/azure-database";
 import { authUtils } from "@/lib/auth";
 
 const Register = () => {

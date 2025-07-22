@@ -1,5 +1,5 @@
 
-import { dbOperations, User } from './azure-database';
+import { azureDbOperations as dbOperations, User } from './azure-database';
 
 const JWT_SECRET = import.meta.env.VITE_JWT_SECRET || 'your-jwt-secret-key';
 
