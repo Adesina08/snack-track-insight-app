@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-import { azureDbOperations as dbOperations } from "@/lib/azure-database";
+import { apiClient } from "@/lib/api-client";
 import { authUtils } from "@/lib/auth";
 
 const Register = () => {
@@ -72,37 +72,27 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      const existingUser = await dbOperations.getUserByEmail(formData.email);
-      if (existingUser) {
-        toast({
-          title: "Account exists",
-          description: "An account with this email already exists.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const hashedPassword = await authUtils.hashPassword(formData.password);
-
-      const newUser = await dbOperations.createUser({
+      const response = await apiClient.register({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         phone: formData.phone,
-        passwordHash: hashedPassword,
+        password: formData.password,
       });
 
-      const token = await authUtils.generateToken(newUser);
-      authUtils.setAuthToken(token);
+      if (response.user) {
+        const token = await authUtils.generateToken(response.user);
+        authUtils.setAuthToken(token);
 
-      localStorage.removeItem("registerForm"); // Clear saved form on success
+        localStorage.removeItem("registerForm"); // Clear saved form on success
 
-      toast({
-        title: "Account created successfully!",
-        description: "Welcome to SnackTrack. You can now start logging your consumption.",
-      });
+        toast({
+          title: "Account created successfully!",
+          description: "Welcome to SnackTrack. You can now start logging your consumption.",
+        });
 
-      navigate("/dashboard");
+        navigate("/dashboard");
+      }
     } catch (error) {
       console.error("Registration error:", error);
       toast({

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, TrendingUp, Award, Database, Download, Calendar } from "lucide-react";
 import Navigation from "@/components/Navigation";
-import { azureDbOperations as dbOperations } from "@/lib/azure-database";
+import { apiClient } from "@/lib/api-client";
 import ActivityCalendar from 'react-activity-calendar';
 
 interface AdminStats {
@@ -40,13 +40,13 @@ const AdminDashboard = () => {
       setIsLoading(true);
       
       // Load consumption logs for analytics
-      const logs = await dbOperations.getAllConsumptionLogs();
-      const analytics = await dbOperations.getConsumptionAnalytics();
+      const logs = await apiClient.getAllConsumptionLogs();
+      const analytics = await apiClient.getConsumptionAnalytics();
       
       // Calculate stats
       const totalLogs = logs.length;
-      const totalPoints = logs.reduce((sum, log) => sum + (log.points || 0), 0);
-      const uniqueUsers = new Set(logs.map(log => log.userId)).size;
+      const totalPoints = logs.reduce((sum: number, log: any) => sum + (log.points || 0), 0);
+      const uniqueUsers = new Set(logs.map((log: any) => log.userId)).size;
       
       setStats({
         totalUsers: uniqueUsers,
@@ -131,7 +131,7 @@ const AdminDashboard = () => {
 
   const exportData = async () => {
     try {
-      const logs = await dbOperations.getAllConsumptionLogs();
+      const logs = await apiClient.getAllConsumptionLogs();
       const csvContent = [
         'Date,User,Product,Brand,Category,Spend,Method,Points',
         ...logs.map(log => [

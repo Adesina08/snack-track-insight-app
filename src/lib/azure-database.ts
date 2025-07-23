@@ -1,33 +1,10 @@
-// Azure PostgreSQL Configuration for REST API connection
-export interface AzureDbConfig {
-  host: string;
-  port: number;
-  database: string;
-  username: string;
-  password: string;
-  ssl: boolean;
-}
+// DEPRECATED: This file is being replaced by the new API client architecture
+// Use src/lib/api-client.ts for frontend API calls
+// Use src/lib/backend-services.ts for backend service configurations
 
-// Configuration - these should be stored in Supabase Secrets
-const getAzureDbConfig = (): AzureDbConfig => {
-  // In production, these should come from Supabase Edge Function secrets
-  // For development, you can use environment variables or local storage fallback
-  return {
-    host: import.meta.env.VITE_AZURE_DB_HOST || localStorage.getItem('azure_db_host') || 'your-server.postgres.database.azure.com',
-    port: parseInt(import.meta.env.VITE_AZURE_DB_PORT || '5432'),
-    database: import.meta.env.VITE_AZURE_DB_NAME || localStorage.getItem('azure_db_name') || 'your-database',
-    username: import.meta.env.VITE_AZURE_DB_USER || localStorage.getItem('azure_db_user') || 'your-username@your-server',
-    password: import.meta.env.VITE_AZURE_DB_PASSWORD || localStorage.getItem('azure_db_password') || 'your-password',
-    ssl: true
-  };
-};
+import { apiClient } from './api-client';
 
-// Azure REST API endpoint (you'll need to create this as a Supabase Edge Function)
-const getApiEndpoint = () => {
-  return import.meta.env.VITE_API_ENDPOINT || 'https://your-supabase-project.supabase.co/functions/v1/azure-db';
-};
-
-// Database types (same as before)
+// Re-export types for backward compatibility
 export interface User {
   id: string;
   email: string;
@@ -66,66 +43,50 @@ export interface Reward {
   isActive: boolean;
 }
 
-// API helper function
-const apiCall = async (endpoint: string, method: string = 'GET', data?: any) => {
-  const baseUrl = getApiEndpoint();
-  const config = getAzureDbConfig();
-  
-  const response = await fetch(`${baseUrl}/${endpoint}`, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${btoa(JSON.stringify(config))}` // Pass config securely
-    },
-    body: data ? JSON.stringify(data) : undefined
-  });
-  
-  if (!response.ok) {
-    throw new Error(`API call failed: ${response.statusText}`);
-  }
-  
-  return response.json();
-};
-
-// Database operations for Azure PostgreSQL via REST API
+// DEPRECATED: Use apiClient instead
+// This wrapper maintains backward compatibility while migrating to the new API client
 export const azureDbOperations = {
-  // User operations
   async createUser(userData: Omit<User, 'id' | 'createdAt' | 'points'>) {
-    return apiCall('users', 'POST', userData);
+    return apiClient.register({
+      email: userData.email,
+      password: userData.passwordHash,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      phone: userData.phone,
+    });
   },
 
   async getUserByEmail(email: string) {
-    return apiCall(`users/${encodeURIComponent(email)}`);
+    // This would need to be handled differently in the new architecture
+    // You might want to use getUserProfile with user ID instead
+    throw new Error('Use apiClient.login() instead');
   },
 
   async updateUserPoints(userId: string, points: number) {
-    return apiCall(`users/${userId}/points`, 'PATCH', { points });
+    return apiClient.updateUserPoints(userId, points);
   },
 
   async updateUserProfile(userId: string, profileData: Partial<User>) {
-    return apiCall(`users/${userId}`, 'PATCH', profileData);
+    return apiClient.updateUserProfile(userId, profileData);
   },
 
-  // Consumption logs
   async createConsumptionLog(logData: Omit<ConsumptionLog, 'id' | 'createdAt'>) {
-    return apiCall('consumption-logs', 'POST', logData);
+    return apiClient.createConsumptionLog(logData);
   },
 
   async getUserConsumptionLogs(userId: string) {
-    return apiCall(`consumption-logs/user/${userId}`);
+    return apiClient.getUserConsumptionLogs(userId);
   },
 
   async getAllConsumptionLogs() {
-    return apiCall('consumption-logs');
+    return apiClient.getAllConsumptionLogs();
   },
 
-  // Analytics
   async getConsumptionAnalytics() {
-    return apiCall('analytics/consumption');
+    return apiClient.getConsumptionAnalytics();
   },
 
-  // Rewards
   async getRewards() {
-    return apiCall('rewards');
+    return apiClient.getRewards();
   }
 };

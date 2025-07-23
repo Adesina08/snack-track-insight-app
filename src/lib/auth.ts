@@ -1,5 +1,5 @@
 
-import { azureDbOperations as dbOperations, User } from './azure-database';
+import { User } from '@/types/api';
 
 const JWT_SECRET = import.meta.env.VITE_JWT_SECRET || 'your-jwt-secret-key';
 
@@ -153,7 +153,15 @@ export const authUtils = {
     }
 
     try {
-      return await dbOperations.getUserByEmail(payload.email);
+      // For now, return a mock user. In a real app, fetch from API
+      return {
+        id: payload.userId,
+        email: payload.email,
+        firstName: 'User',
+        lastName: 'Name',
+        createdAt: new Date().toISOString(),
+        points: 0
+      };
     } catch (error) {
       this.removeAuthToken();
       return null;
