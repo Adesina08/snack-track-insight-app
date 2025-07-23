@@ -1,80 +1,112 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
-import { toast } from "sonner";
+import { authUtils } from "@/lib/auth";
 
 const Register = () => {
-  const { login, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    phone: ''
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    agreeToTerms: false,
+    agreeToMarketing: false
   });
-  const [isEmailLoading, setIsEmailLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
+  // Load saved form data from localStorage on mount
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard', { replace: true });
+    const savedData = localStorage.getItem("registerForm");
+    if (savedData) {
+      setFormData(JSON.parse(savedData));
     }
-  }, [isAuthenticated, navigate]);
+  }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  // Save form data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("registerForm", JSON.stringify(formData));
+  }, [formData]);
 
-  const handleEmailRegister = async (e: React.FormEvent) => {
+  // Clear saved form when visiting homepage
+  useEffect(() => {
+    if (location.pathname === "/") {
+      localStorage.removeItem("registerForm");
+    }
+  }, [location.pathname]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { firstName, lastName, email, password, confirmPassword, phone } = formData;
-    
-    if (!firstName || !lastName || !email || !password) {
-      toast.error('Please fill in all required fields');
+
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match.",
+        variant: "destructive",
+      });
       return;
     }
 
-    if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
+    if (!formData.agreeToTerms) {
+      toast({
+        title: "Terms required",
+        description: "Please agree to the terms and conditions.",
+        variant: "destructive",
+      });
       return;
     }
 
-    if (password.length < 8) {
-      toast.error('Password must be at least 8 characters');
-      return;
-    }
+    setIsLoading(true);
 
-    setIsEmailLoading(true);
     try {
-      await apiClient.register({ firstName, lastName, email, password, phone });
-      toast.success('Registration successful! Please sign in.');
-      navigate('/login');
+      const response = await apiClient.register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+      });
+
+      if (response.user) {
+        const token = await authUtils.generateToken(response.user);
+        authUtils.setAuthToken(token);
+
+        localStorage.removeItem("registerForm"); // Clear saved form on success
+
+        toast({
+          title: "Account created successfully!",
+          description: "Welcome to SnackTrack. You can now start logging your consumption.",
+        });
+
+        navigate("/dashboard");
+      }
     } catch (error) {
-      toast.error('Registration failed. Please try again.');
+      console.error("Registration error:", error);
+      toast({
+        title: "Registration failed",
+        description: "An error occurred during registration. Please try again.",
+        variant: "destructive",
+      });
     } finally {
-      setIsEmailLoading(false);
-    }
-  };
-
-  const handleMicrosoftRegister = async () => {
-    try {
-      await login();
-      toast.success("Account created successfully!");
-    } catch (error) {
-      toast.error("Microsoft registration failed. Please try again.");
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen gradient-secondary flex items-center justify-center p-4 py-8">
+    <div className="min-h-screen gradient-secondary flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-6">
           <Link to="/" className="flex items-center text-blue-600 hover:text-blue-700 transition-colors hover-glow">
@@ -87,144 +119,144 @@ const Register = () => {
           <CardHeader className="text-center">
             <div className="w-12 h-12 gradient-primary rounded-full mx-auto mb-4 shadow-lg"></div>
             <CardTitle className="text-2xl font-bold text-gradient">Create Your Account</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Join the SnackTrack community
-            </CardDescription>
+            <p className="text-muted-foreground">Join the SnackTrack community</p>
           </CardHeader>
 
-          <CardContent className="space-y-6">
-            <form onSubmit={handleEmailRegister} className="space-y-4">
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+                <div>
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
                     id="firstName"
-                    name="firstName"
-                    placeholder="John"
                     value={formData.firstName}
-                    onChange={handleInputChange}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     required
+                    className="border-blue-200 focus:border-blue-400 glass-effect"
                   />
                 </div>
-                <div className="space-y-2">
+                <div>
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
                     id="lastName"
-                    name="lastName"
-                    placeholder="Doe"
                     value={formData.lastName}
-                    onChange={handleInputChange}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                     required
+                    className="border-blue-200 focus:border-blue-400 glass-effect"
                   />
                 </div>
               </div>
-              <div className="space-y-2">
+
+              <div>
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
-                  name="email"
                   type="email"
-                  placeholder="john@example.com"
                   value={formData.email}
-                  onChange={handleInputChange}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
+                  className="border-blue-200 focus:border-blue-400 glass-effect"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone (Optional)</Label>
+
+              <div>
+                <Label htmlFor="phone">Phone Number</Label>
                 <Input
                   id="phone"
-                  name="phone"
                   type="tel"
-                  placeholder="+1 (555) 123-4567"
                   value={formData.phone}
-                  onChange={handleInputChange}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  required
+                  className="border-blue-200 focus:border-blue-400 glass-effect"
                 />
               </div>
-              <div className="space-y-2">
+
+              <div>
                 <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="At least 8 characters"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    required
+                    className="border-blue-200 focus:border-blue-400 pr-10 glass-effect"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
-              <div className="space-y-2">
+
+              <div>
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  placeholder="Repeat your password"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    required
+                    className="border-blue-200 focus:border-blue-400 pr-10 glass-effect"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
-              <Button 
-                type="submit" 
-                className="w-full gradient-primary hover-glow text-white shadow-lg" 
-                disabled={isEmailLoading}
-                size="lg"
+
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="terms"
+                    checked={formData.agreeToTerms}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, agreeToTerms: checked as boolean })
+                    }
+                  />
+                  <Label htmlFor="terms" className="text-sm">
+                    I agree to the <Link to="/terms" className="text-blue-600 hover:underline">Terms and Conditions</Link>
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="marketing"
+                    checked={formData.agreeToMarketing}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, agreeToMarketing: checked as boolean })
+                    }
+                  />
+                  <Label htmlFor="marketing" className="text-sm">
+                    I want to receive marketing communications
+                  </Label>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full gradient-primary hover-glow text-white shadow-lg"
+                disabled={isLoading}
               >
-                {isEmailLoading ? 'Creating Account...' : 'Create Account'}
+                {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator className="w-full" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Button 
-                variant="outline" 
-                className="w-full hover-glow" 
-                onClick={handleMicrosoftRegister}
-                disabled={isLoading}
-              >
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M12 2v10H2V2h10zm10 0v10H12V2h10zM12 22v-10h10v10H12zM2 22v-10h10v10H2z"/>
-                </svg>
-                {isLoading ? 'Creating Account...' : 'Continue with Microsoft'}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full hover-glow"
-                onClick={() => toast.info('Google registration coming soon!')}
-              >
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                Continue with Google
-              </Button>
-            </div>
-
-            <div className="text-center">
+            <div className="mt-6 text-center">
               <p className="text-muted-foreground">
                 Already have an account?{" "}
                 <Link to="/login" className="text-blue-600 hover:underline font-semibold">
                   Sign in here
                 </Link>
               </p>
-            </div>
-
-            <div className="text-center text-xs text-muted-foreground">
-              By creating an account, you agree to our{' '}
-              <Link to="/terms" className="text-blue-600 hover:underline">
-                Terms of Service
-              </Link>
             </div>
           </CardContent>
         </Card>
