@@ -1,24 +1,24 @@
 # Azure Setup Guide for SnackTrack
 
-This guide will help you set up Azure AD B2C authentication, Azure Functions backend, and deploy your app to Azure Static Web Apps.
+This guide will help you set up Microsoft Entra External ID authentication, Azure Functions backend, and deploy your app to Azure Static Web Apps.
 
-## Part 1: Azure AD B2C Setup
+## Part 1: Microsoft Entra External ID Setup
 
-### 1. Create Azure AD B2C Tenant
+### 1. Create Microsoft Entra External ID Tenant
 
 1. Go to [Azure Portal](https://portal.azure.com)
-2. Create a new resource → Search "Azure Active Directory B2C"
-3. Create a new tenant:
+2. Create a new resource → Search "Microsoft Entra External ID"
+3. Create a new external tenant:
    - Organization name: `SnackTrack`
-   - Initial domain: `snacktrack` (will be `snacktrack.onmicrosoft.com`)
+   - Initial domain: `snacktrack` (will be `snacktrack.ciamlogin.com`)
    - Country: Select your country
 
 ### 2. Configure User Flows
 
-1. In your B2C tenant, go to **User flows**
-2. Create a **Sign up and sign in** policy:
-   - Name: `B2C_1_signupsignin`
-   - Identity providers: Check "Email signup"
+1. In your External ID tenant, go to **User flows**
+2. Create a **Sign up and sign in** user flow:
+   - Name: `signupsignin`
+   - Identity providers: Check "Email with password"
    - User attributes: First Name, Last Name, Email Address
    - Application claims: Display Name, Email Addresses, Given Name, Surname, User's Object ID
 
@@ -27,9 +27,9 @@ This guide will help you set up Azure AD B2C authentication, Azure Functions bac
 1. Go to **App registrations** → **New registration**
 2. Fill in:
    - Name: `SnackTrack Web App`
-   - Supported account types: "Accounts in any identity provider or organizational directory"
-   - Redirect URI: `http://localhost:8080` (for development)
-3. After creation, note down the **Application (client) ID**
+   - Supported account types: "Accounts in this organizational directory only"
+   - Redirect URI: `Single-page application (SPA)` - `http://localhost:8080` (for development)
+3. After creation, note down the **Application (client) ID** and **Directory (tenant) ID**
 4. Go to **Authentication** → Add redirect URIs for production: `https://your-app-name.azurestaticapps.net`
 
 ### 4. Environment Variables for Development
@@ -37,10 +37,9 @@ This guide will help you set up Azure AD B2C authentication, Azure Functions bac
 Create these environment variables in your development environment:
 
 ```bash
-VITE_AZURE_AD_B2C_CLIENT_ID=your-client-id-here
-VITE_AZURE_AD_B2C_TENANT_NAME=snacktrack
-VITE_AZURE_AD_B2C_POLICY_NAME=B2C_1_signupsignin
-VITE_AZURE_AD_B2C_API_SCOPE=access
+VITE_ENTRA_EXTERNAL_CLIENT_ID=your-client-id-here
+VITE_ENTRA_EXTERNAL_TENANT_NAME=snacktrack
+VITE_ENTRA_EXTERNAL_TENANT_ID=your-tenant-id-here
 VITE_API_BASE_URL=https://your-function-app.azurewebsites.net/api
 ```
 
@@ -95,9 +94,9 @@ AZURE_SPEECH_REGION=your-region
 AZURE_COMPUTER_VISION_KEY=your-vision-key
 AZURE_COMPUTER_VISION_ENDPOINT=your-vision-endpoint
 
-# Azure AD B2C
-AZURE_AD_B2C_TENANT_ID=your-tenant-id
-AZURE_AD_B2C_CLIENT_ID=your-client-id
+# Microsoft Entra External ID
+ENTRA_EXTERNAL_TENANT_ID=your-tenant-id
+ENTRA_EXTERNAL_CLIENT_ID=your-client-id
 ```
 
 ### 4. Deploy Function Code
@@ -127,16 +126,15 @@ You can deploy your Azure Functions using:
 2. Add these application settings:
 
 ```bash
-VITE_AZURE_AD_B2C_CLIENT_ID=your-client-id
-VITE_AZURE_AD_B2C_TENANT_NAME=snacktrack
-VITE_AZURE_AD_B2C_POLICY_NAME=B2C_1_signupsignin
-VITE_AZURE_AD_B2C_API_SCOPE=access
+VITE_ENTRA_EXTERNAL_CLIENT_ID=your-client-id
+VITE_ENTRA_EXTERNAL_TENANT_NAME=snacktrack
+VITE_ENTRA_EXTERNAL_TENANT_ID=your-tenant-id
 VITE_API_BASE_URL=https://your-function-app.azurewebsites.net/api
 ```
 
 ### 3. Update Redirect URIs
 
-1. Go back to Azure AD B2C → App registrations
+1. Go back to Microsoft Entra External ID → App registrations
 2. Add your production URL to redirect URIs:
    - `https://your-app-name.azurestaticapps.net`
 
@@ -202,7 +200,7 @@ CREATE INDEX idx_users_email ON users(email);
 ## Part 5: Testing Your Setup
 
 1. **Local Development**: Test with `npm run dev`
-2. **Authentication**: Verify Azure AD B2C login works
+2. **Authentication**: Verify Microsoft Entra External ID login works
 3. **API Calls**: Test backend functions with authenticated requests
 4. **Database**: Verify data is being stored correctly
 5. **File Uploads**: Test media upload to Azure Blob Storage
@@ -219,5 +217,5 @@ CREATE INDEX idx_users_email ON users(email);
 
 - Use Azure Application Insights for monitoring
 - Enable logging in your Function App
-- Monitor Azure AD B2C sign-in logs
+- Monitor Microsoft Entra External ID sign-in logs
 - Set up alerts for failed authentications or API errors

@@ -13,7 +13,7 @@ const pool = new Pool({
 });
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
-  context.log('Azure AD B2C user authentication');
+  context.log('Microsoft Entra External ID user authentication');
 
   if (req.method !== 'POST') {
     context.res = {
@@ -24,7 +24,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
   }
 
   try {
-    // In Azure AD B2C flow, this endpoint would validate the token
+    // In Microsoft Entra External ID flow, this endpoint would validate the token
     // and sync user data with your database
     const { accessToken, userInfo } = req.body;
 
@@ -36,7 +36,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
       return;
     }
 
-    // Validate Azure AD B2C token (implement token validation logic)
+    // Validate Microsoft Entra External ID token (implement token validation logic)
     // For now, we'll assume the token is valid and extract user info
 
     const { email, given_name, family_name, oid } = userInfo;
