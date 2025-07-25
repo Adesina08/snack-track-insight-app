@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,17 +8,74 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Gift, Star, Trophy, Crown, Zap, Smartphone, Coffee, ShoppingBag } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
+import { authUtils } from "@/lib/auth";
+import { apiClient } from "@/lib/api-client";
+import { User, Reward } from "@/types/api";
 
 const Rewards = () => {
-  const [userPoints, setUserPoints] = useState(1247);
+  const [user, setUser] = useState<User | null>(null);
+  const [userPoints, setUserPoints] = useState(0);
+  const [rewards, setRewards] = useState<Reward[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const redeemReward = (cost: number, reward: string) => {
-    if (userPoints >= cost) {
-      setUserPoints(userPoints - cost);
+  useEffect(() => {
+    loadRewardsData();
+  }, []);
+
+  const loadRewardsData = async () => {
+    try {
+      const currentUser = await authUtils.getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+        setUserPoints(currentUser.points || 0);
+      }
+      
+      // Load available rewards from database
+      const availableRewards = await apiClient.getRewards();
+      setRewards(availableRewards);
+    } catch (error) {
+      console.error('Error loading rewards data:', error);
+      // Fallback to static rewards if API fails
+      setRewards(staticRewardItems);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const redeemReward = async (cost: number, reward: string, rewardId?: string) => {
+    if (!user) {
       toast({
-        title: "Reward Redeemed! 🎉",
-        description: `You have successfully redeemed ${reward}`,
+        title: "Error",
+        description: "User not found. Please log in again.",
+        variant: "destructive",
       });
+      return;
+    }
+
+    if (userPoints >= cost) {
+      try {
+        if (rewardId) {
+          await apiClient.redeemReward(user.id, rewardId);
+        }
+        
+        const newPoints = userPoints - cost;
+        setUserPoints(newPoints);
+        
+        // Update user points in the database
+        await apiClient.updateUserPoints(user.id, newPoints);
+        
+        toast({
+          title: "Reward Redeemed! 🎉",
+          description: `You have successfully redeemed ${reward}`,
+        });
+      } catch (error) {
+        console.error('Error redeeming reward:', error);
+        toast({
+          title: "Redemption Failed",
+          description: "Could not process your reward redemption. Please try again.",
+          variant: "destructive",
+        });
+      }
     } else {
       toast({
         title: "Insufficient Points",
@@ -28,80 +85,100 @@ const Rewards = () => {
     }
   };
 
-  const rewardItems = [
+  // Static fallback rewards if API fails
+  const staticRewardItems: (Reward & { cost?: number; icon?: any; popular?: boolean })[] = [
     {
-      id: 1,
+      id: "1",
       name: "₦500 MTN Airtime",
       description: "Mobile recharge for MTN network",
+      pointsRequired: 500,
       cost: 500,
       icon: Smartphone,
       category: "airtime",
-      popular: false
+      popular: false,
+      isActive: true
     },
     {
-      id: 2,
+      id: "2",
       name: "₦1000 Airtel Data",
       description: "1GB data bundle for Airtel",
+      pointsRequired: 800,
       cost: 800,
       icon: Smartphone,
       category: "data",
-      popular: true
+      popular: true,
+      isActive: true
     },
     {
-      id: 3,
+      id: "3",
       name: "₦2000 9mobile Airtime",
       description: "Mobile recharge for 9mobile network",
+      pointsRequired: 1000,
       cost: 1000,
       icon: Smartphone,
       category: "airtime",
-      popular: false
+      popular: false,
+      isActive: true
     },
     {
-      id: 4,
+      id: "4",
       name: "Jumia Voucher",
       description: "₦5000 Jumia shopping voucher",
+      pointsRequired: 2000,
       cost: 2000,
       icon: ShoppingBag,
       category: "voucher",
-      popular: true
+      popular: true,
+      isActive: true
     },
     {
-      id: 5,
+      id: "5",
       name: "Dominos Pizza",
       description: "Free medium pizza from Dominos Nigeria",
+      pointsRequired: 1500,
       cost: 1500,
       icon: Gift,
       category: "food",
-      popular: false
+      popular: false,
+      isActive: true
     },
     {
-      id: 6,
+      id: "6",
       name: "Netflix Naija",
       description: "1 month Netflix Nigeria subscription",
+      pointsRequired: 1200,
       cost: 1200,
       icon: Zap,
       category: "entertainment",
-      popular: true
+      popular: true,
+      isActive: true
     },
     {
-      id: 7,
+      id: "7",
       name: "Konga Voucher",
       description: "₦3000 Konga shopping voucher",
+      pointsRequired: 1300,
       cost: 1300,
       icon: ShoppingBag,
       category: "voucher",
-      popular: false
+      popular: false,
+      isActive: true
     },
     {
-      id: 8,
+      id: "8",
       name: "Glo Data Bundle",
       description: "2GB data bundle for Glo network",
+      pointsRequired: 900,
       cost: 900,
       icon: Smartphone,
       category: "data",
-      popular: true
+      popular: true,
+      isActive: true
     }
   ];
+
+  // Use database rewards if available, otherwise fallback to static
+  const displayRewards = rewards.length > 0 ? rewards : staticRewardItems;
 
   const leaderboard = [
     { rank: 1, name: "Adebayo Lagos", points: 3450, avatar: "👑" },
@@ -197,42 +274,58 @@ const Rewards = () => {
           </TabsList>
 
           <TabsContent value="redeem">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {rewardItems.map((reward) => (
-                <Card key={reward.id} className="glass-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 hover-glow">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="w-12 h-12 gradient-primary rounded-lg flex items-center justify-center">
-                        <reward.icon className="h-6 w-6 text-white" />
-                      </div>
-                      {reward.popular && (
-                        <Badge className="bg-green-600 text-white">Popular</Badge>
-                      )}
-                    </div>
-                    <CardTitle className="text-lg">{reward.name}</CardTitle>
-                    <p className="text-sm text-gray-600">{reward.description}</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-blue-600 font-bold">
-                        <Star className="h-4 w-4 mr-1" />
-                        {reward.cost} pts
-                      </div>
-                      <Button
-                        onClick={() => redeemReward(reward.cost, reward.name)}
-                        disabled={userPoints < reward.cost}
-                        className={userPoints >= reward.cost 
-                          ? "gradient-primary hover-glow text-white" 
-                          : ""}
-                        size="sm"
-                      >
-                        {userPoints >= reward.cost ? "Redeem" : "Need More"}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading rewards...</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 {displayRewards.map((reward) => {
+                   // Handle both database rewards and static rewards
+                   const rewardCost = reward.pointsRequired || (reward as any).cost || 0;
+                   const rewardIcon = (reward as any).icon || Smartphone;
+                   const isPopular = (reward as any).popular || false;
+                  
+                  return (
+                    <Card key={reward.id} className="glass-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 hover-glow">
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                         <div className="w-12 h-12 gradient-primary rounded-lg flex items-center justify-center">
+                            {typeof rewardIcon === 'function' ? (
+                              React.createElement(rewardIcon, { className: "h-6 w-6 text-white" })
+                            ) : (
+                              <Gift className="h-6 w-6 text-white" />
+                            )}
+                          </div>
+                          {isPopular && (
+                            <Badge className="bg-green-600 text-white">Popular</Badge>
+                          )}
+                        </div>
+                        <CardTitle className="text-lg">{reward.name}</CardTitle>
+                        <p className="text-sm text-gray-600">{reward.description}</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-blue-600 font-bold">
+                            <Star className="h-4 w-4 mr-1" />
+                            {rewardCost} pts
+                          </div>
+                          <Button
+                            onClick={() => redeemReward(rewardCost, reward.name, reward.id)}
+                            disabled={userPoints < rewardCost || !reward.isActive}
+                            className={userPoints >= rewardCost && reward.isActive
+                              ? "gradient-primary hover-glow text-white" 
+                              : ""}
+                            size="sm"
+                          >
+                            {!reward.isActive ? "Unavailable" : 
+                             userPoints >= rewardCost ? "Redeem" : "Need More"}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="leaderboard">
