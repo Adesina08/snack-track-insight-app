@@ -21,12 +21,20 @@ export class ApiClient {
     };
 
     const response = await fetch(url, config);
-    
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      let message = `Request failed with status ${response.status}`;
+      try {
+        const data = await response.json();
+        message = data.message || message;
+      } catch {
+        // ignore json parse errors
+      }
+      const error = new Error(message) as Error & { status?: number };
+      error.status = response.status;
+      throw error;
     }
-    
+
     return response.json();
   }
 
@@ -56,7 +64,7 @@ export class ApiClient {
     return this.request<User>(`/users/${userId}`);
   }
 
-  async updateUserProfile(userId: string, profileData: any): Promise<User> {
+  async updateUserProfile(userId: string, profileData: Partial<User>): Promise<User> {
     return this.request<User>(`/users/${userId}`, {
       method: 'PATCH',
       body: JSON.stringify(profileData),
@@ -137,8 +145,8 @@ export class ApiClient {
   }
 
   // Analytics endpoints
-  async getConsumptionAnalytics(): Promise<any[]> {
-    return this.request<any[]>('/analytics/consumption');
+  async getConsumptionAnalytics(): Promise<ConsumptionLog[]> {
+    return this.request<ConsumptionLog[]>('/analytics/consumption');
   }
 
   // Rewards endpoints

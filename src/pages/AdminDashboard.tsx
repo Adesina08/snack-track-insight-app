@@ -3,16 +3,18 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Users, TrendingUp, Award, Database, Download, Calendar } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { apiClient } from "@/lib/api-client";
 import ActivityCalendar from 'react-activity-calendar';
+import { ConsumptionLog } from "@/types/api";
 
 interface AdminStats {
   totalUsers: number;
   totalLogs: number;
   totalPoints: number;
-  recentActivity: any[];
+  recentActivity: ConsumptionLog[];
 }
 
 interface ActivityData {
@@ -45,8 +47,8 @@ const AdminDashboard = () => {
       
       // Calculate stats
       const totalLogs = logs.length;
-      const totalPoints = logs.reduce((sum: number, log: any) => sum + (log.points || 0), 0);
-      const uniqueUsers = new Set(logs.map((log: any) => log.userId)).size;
+      const totalPoints = logs.reduce((sum: number, log: ConsumptionLog) => sum + (log.points || 0), 0);
+      const uniqueUsers = new Set(logs.map((log: ConsumptionLog) => log.userId)).size;
       
       setStats({
         totalUsers: uniqueUsers,
@@ -89,7 +91,7 @@ const AdminDashboard = () => {
     return data;
   };
 
-  const generateActivityHeatmap = (analytics: any[]): ActivityData[] => {
+  const generateActivityHeatmap = (analytics: ConsumptionLog[]): ActivityData[] => {
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - 365);
@@ -163,8 +165,15 @@ const AdminDashboard = () => {
       <div className="min-h-screen gradient-secondary">
         <Navigation />
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-24 w-full" />
+            ))}
+          </div>
+          <div className="mt-8 space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
           </div>
         </div>
       </div>
