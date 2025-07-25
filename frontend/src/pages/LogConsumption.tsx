@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mic, Video, MapPin, Users, DollarSign, Sparkles, Zap, Upload } from "lucide-react";
+import { Mic, Video, Sparkles, Zap, Upload } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
@@ -436,6 +436,90 @@ const LogConsumption = () => {
                     </Button>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Manual Entry Section */}
+            <Card className="glass-card hover-glow">
+              <CardHeader>
+                <CardTitle className="flex items-center text-gradient">
+                  <Sparkles className="h-5 w-5 mr-2" />
+                  Meal Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="product">Product Name</Label>
+                  <Input
+                    id="product"
+                    value={formData.product}
+                    onChange={(e) => setFormData({ ...formData, product: e.target.value })}
+                    className="glass-effect"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="brand">Brand</Label>
+                  <Input
+                    id="brand"
+                    value={formData.brand}
+                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                    className="glass-effect"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="category">Category</Label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  >
+                    <SelectTrigger id="category" className="glass-effect">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="spend">Amount Spent</Label>
+                  <Input
+                    id="spend"
+                    value={formData.spend}
+                    onChange={(e) => setFormData({ ...formData, spend: e.target.value })}
+                    className="glass-effect"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="companions">Companion(s)</Label>
+                  <Select
+                    value={formData.companions}
+                    onValueChange={(value) => setFormData({ ...formData, companions: value })}
+                  >
+                    <SelectTrigger id="companions" className="glass-effect">
+                      <SelectValue placeholder="Who were you with?" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {companionOptions.map((opt) => (
+                        <SelectItem key={opt} value={opt}>
+                          {opt}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="notes">Notes</Label>
+                  <Textarea
+                    id="notes"
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    className="glass-effect"
+                  />
+                </div>
               </CardContent>
             </Card>
           </form>
