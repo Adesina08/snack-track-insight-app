@@ -24,3 +24,7 @@ bun.lock
 *.njsproj
 *.sln
 *.sw?
+bun.lock
+package-lock.json
+frontend/package-lock.json
+backend/package-lock.json

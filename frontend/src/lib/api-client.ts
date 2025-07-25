@@ -78,6 +78,20 @@ export class ApiClient {
     });
   }
 
+  async registerPushToken(userId: string, token: string) {
+    return this.request('/push/register', {
+      method: 'POST',
+      body: JSON.stringify({ userId, token }),
+    });
+  }
+
+  async unregisterPushToken(token: string) {
+    return this.request('/push/unregister', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    });
+  }
+
   // Consumption logs endpoints
   async createConsumptionLog(logData: CreateConsumptionLogRequest): Promise<ConsumptionLog> {
     return this.request<ConsumptionLog>('/consumption-logs', {
