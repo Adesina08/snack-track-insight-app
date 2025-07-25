@@ -33,6 +33,19 @@ npm install
 npm start
 ```
 
+### Environment Variables
+
+Create a `.env` file in the project root (or use your hosting provider's configuration) and define the following variables:
+
+```
+VITE_JWT_SECRET=<your secret key>
+VITE_AZURE_STORAGE_ACCOUNT=<your storage account>
+VITE_AZURE_STORAGE_CONTAINER=<your container name>
+VITE_AZURE_STORAGE_SAS=<your SAS token>
+```
+
+The app requires `VITE_JWT_SECRET` for authentication tokens. Azure Storage variables are optional but enable media uploads if provided.
+
 **Edit a file directly in GitHub**
 
 - Navigate to the desired file(s).
