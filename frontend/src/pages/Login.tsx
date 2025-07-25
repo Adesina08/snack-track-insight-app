@@ -10,6 +10,8 @@ import { toast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { authUtils } from "@/lib/auth";
+import { NotificationService } from "@/lib/notifications";
+import NotificationPrompt from "@/components/NotificationPrompt";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,6 +21,20 @@ const Login = () => {
     rememberMe: false
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+  const [nextPath, setNextPath] = useState<string>("/dashboard");
+
+  const handleEnableNotifications = async () => {
+    await NotificationService.requestPermission();
+    NotificationService.savePreferences(NotificationService.loadPreferences());
+    setShowNotificationPrompt(false);
+    navigate(nextPath);
+  };
+
+  const handleClosePrompt = () => {
+    setShowNotificationPrompt(false);
+    navigate(nextPath);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,11 +55,14 @@ const Login = () => {
           description: "You have successfully logged in to SnackTrack.",
         });
 
-        // Navigate based on user type
-        if (authUtils.isAdminUser(response.user)) {
-          navigate("/admin");
+        const path = authUtils.isAdminUser(response.user) ? "/admin" : "/dashboard";
+
+        const hasPrefs = localStorage.getItem('notification_preferences');
+        if (!hasPrefs) {
+          setNextPath(path);
+          setShowNotificationPrompt(true);
         } else {
-          navigate("/dashboard");
+          navigate(path);
         }
       }
     } catch (error) {
@@ -59,6 +78,7 @@ const Login = () => {
   };
 
   return (
+    <>
     <div className="min-h-screen gradient-secondary flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-6">
@@ -166,6 +186,12 @@ const Login = () => {
         </Card>
       </div>
     </div>
+    <NotificationPrompt
+      open={showNotificationPrompt}
+      onEnable={handleEnableNotifications}
+      onClose={handleClosePrompt}
+    />
+    </>
   );
 };
 

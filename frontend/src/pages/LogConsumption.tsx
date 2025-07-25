@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mic, Video, MapPin, Users, DollarSign, Sparkles, Zap, Upload } from "lucide-react";
+import { Mic, Video, Sparkles, Zap, Upload } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
@@ -30,6 +31,7 @@ const LogConsumption = () => {
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
   const [aiAnalysis, setAiAnalysis] = useState<AzureAIAnalysis | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -130,18 +132,24 @@ const LogConsumption = () => {
 
   const analyzeWithAzureAI = async (file: File) => {
     setIsAnalyzing(true);
+    setAnalysisProgress(0);
     try {
       let transcription = '';
-      
+
       // Transcribe audio/video
       if (file.type.includes('audio') || file.type.includes('video')) {
-        transcription = await azureAI.transcribeAudio(file);
+        transcription = await azureAI.transcribeAudio(file, (p) => {
+          setAnalysisProgress(p / 2);
+        });
       }
 
       // Analyze consumption data
       const analysis = await azureAI.analyzeConsumption(
-        transcription, 
-        file.type.includes('video') ? 'video' : 'audio'
+        transcription,
+        file.type.includes('video') ? 'video' : 'audio',
+        (p) => {
+          setAnalysisProgress(50 + p / 2);
+        }
       );
       
       setAiAnalysis(analysis);
@@ -169,6 +177,7 @@ const LogConsumption = () => {
         variant: "destructive",
       });
     } finally {
+      setAnalysisProgress(100);
       setIsAnalyzing(false);
     }
   };
@@ -370,11 +379,13 @@ const LogConsumption = () => {
                     </div>
 
                     {isAnalyzing && (
-                      <div className="text-center py-6">
+                      <div className="text-center py-6 space-y-2">
                         <div className="inline-flex items-center space-x-2 text-primary">
                           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                           <span>Azure AI is analyzing your Naija meal...</span>
                         </div>
+                        <Progress value={analysisProgress} className="h-2 w-full" />
+                        <p className="text-sm text-muted-foreground">{Math.round(analysisProgress)}%</p>
                       </div>
                     )}
 
@@ -420,7 +431,7 @@ const LogConsumption = () => {
                     <Button
                       type="submit"
                       className="w-full gradient-primary hover-glow text-white shadow-lg"
-                      disabled={isSubmitting || !aiAnalysis}
+                      disabled={isSubmitting || isAnalyzing || !aiAnalysis}
                     >
                       {isSubmitting ? (
                         <>
@@ -436,6 +447,90 @@ const LogConsumption = () => {
                     </Button>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Manual Entry Section */}
+            <Card className="glass-card hover-glow">
+              <CardHeader>
+                <CardTitle className="flex items-center text-gradient">
+                  <Sparkles className="h-5 w-5 mr-2" />
+                  Meal Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="product">Product Name</Label>
+                  <Input
+                    id="product"
+                    value={formData.product}
+                    onChange={(e) => setFormData({ ...formData, product: e.target.value })}
+                    className="glass-effect"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="brand">Brand</Label>
+                  <Input
+                    id="brand"
+                    value={formData.brand}
+                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                    className="glass-effect"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="category">Category</Label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  >
+                    <SelectTrigger id="category" className="glass-effect">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="spend">Amount Spent</Label>
+                  <Input
+                    id="spend"
+                    value={formData.spend}
+                    onChange={(e) => setFormData({ ...formData, spend: e.target.value })}
+                    className="glass-effect"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="companions">Companion(s)</Label>
+                  <Select
+                    value={formData.companions}
+                    onValueChange={(value) => setFormData({ ...formData, companions: value })}
+                  >
+                    <SelectTrigger id="companions" className="glass-effect">
+                      <SelectValue placeholder="Who were you with?" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {companionOptions.map((opt) => (
+                        <SelectItem key={opt} value={opt}>
+                          {opt}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="notes">Notes</Label>
+                  <Textarea
+                    id="notes"
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    className="glass-effect"
+                  />
+                </div>
               </CardContent>
             </Card>
           </form>

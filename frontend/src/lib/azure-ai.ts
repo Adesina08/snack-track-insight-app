@@ -16,73 +16,110 @@ export class AzureAIService {
     // Browser-compatible AI service for food consumption analysis
   }
 
-  async transcribeAudio(audioBlob: Blob): Promise<string> {
+  async transcribeAudio(
+    audioBlob: Blob,
+    onProgress?: (progress: number) => void
+  ): Promise<string> {
     // For browser environment, we'll use a simulated transcription
     // In production, you would send the audio to Azure Speech Service via REST API
     return new Promise((resolve) => {
-      setTimeout(() => {
-        // Simulate transcription based on common Nigerian food context
-        const mockTranscriptions = [
-          'I just had some delicious jollof rice with chicken',
-          'Enjoying suya and pepper soup with friends',
-          'Had pounded yam and egusi soup for dinner',
-          'Drinking coca-cola with my meal',
-          'Just finished eating chin chin and groundnuts'
-        ];
-        const randomTranscription = mockTranscriptions[Math.floor(Math.random() * mockTranscriptions.length)];
-        resolve(randomTranscription);
-      }, 2000);
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 20;
+        onProgress?.(Math.min(progress, 100));
+        if (progress >= 100) {
+          clearInterval(interval);
+          const mockTranscriptions = [
+            'I just had some delicious jollof rice with chicken',
+            'Enjoying suya and pepper soup with friends',
+            'Had pounded yam and egusi soup for dinner',
+            'Drinking coca-cola with my meal',
+            'Just finished eating chin chin and groundnuts'
+          ];
+          const randomTranscription =
+            mockTranscriptions[Math.floor(Math.random() * mockTranscriptions.length)];
+          resolve(randomTranscription);
+        }
+      }, 400);
     });
   }
 
-  async analyzeConsumption(transcription: string, mediaType: 'audio' | 'video'): Promise<AzureAIAnalysis> {
+  async analyzeConsumption(
+    transcription: string,
+    mediaType: 'audio' | 'video',
+    onProgress?: (progress: number) => void
+  ): Promise<AzureAIAnalysis> {
     // Simulate AI analysis based on transcription
     // In a real implementation, you would use Azure Text Analytics, Custom Vision, etc.
-    
-    const productKeywords = ['coca-cola', 'pepsi', 'burger', 'pizza', 'coffee', 'tea', 'sandwich', 'chips'];
-    const brandKeywords = ['mcdonald', 'kfc', 'starbucks', 'subway', 'dominos'];
-    const categoryKeywords = ['beverage', 'snack', 'fast food', 'coffee', 'dessert'];
-    
-    const detectedProducts = productKeywords.filter(keyword => 
-      transcription.toLowerCase().includes(keyword)
-    );
-    
-    const brands = brandKeywords.filter(keyword => 
-      transcription.toLowerCase().includes(keyword)
-    );
-    
-    const categories = categoryKeywords.filter(keyword => 
-      transcription.toLowerCase().includes(keyword)
-    );
 
-    // Simple sentiment analysis
-    const positiveWords = ['good', 'great', 'delicious', 'amazing', 'love', 'excellent'];
-    const negativeWords = ['bad', 'terrible', 'awful', 'hate', 'disgusting'];
-    
-    const positiveCount = positiveWords.filter(word => 
-      transcription.toLowerCase().includes(word)
-    ).length;
-    
-    const negativeCount = negativeWords.filter(word => 
-      transcription.toLowerCase().includes(word)
-    ).length;
-    
-    let sentiment: 'positive' | 'negative' | 'neutral' = 'neutral';
-    if (positiveCount > negativeCount) sentiment = 'positive';
-    else if (negativeCount > positiveCount) sentiment = 'negative';
+    return new Promise((resolve) => {
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 20;
+        onProgress?.(Math.min(progress, 100));
+        if (progress >= 100) {
+          clearInterval(interval);
 
-    return {
-      transcription,
-      detectedProducts,
-      sentiment,
-      confidence: Math.random() * 0.3 + 0.7, // 70-100% confidence
-      emotions: sentiment === 'positive' ? ['happy', 'satisfied'] : 
-                sentiment === 'negative' ? ['disappointed'] : ['neutral'],
-      brands,
-      categories,
-      estimatedSpend: '$' + (Math.random() * 20 + 5).toFixed(2),
-      location: 'Detected from audio context'
-    };
+          const productKeywords = [
+            'coca-cola',
+            'pepsi',
+            'burger',
+            'pizza',
+            'coffee',
+            'tea',
+            'sandwich',
+            'chips'
+          ];
+          const brandKeywords = ['mcdonald', 'kfc', 'starbucks', 'subway', 'dominos'];
+          const categoryKeywords = ['beverage', 'snack', 'fast food', 'coffee', 'dessert'];
+
+          const detectedProducts = productKeywords.filter((keyword) =>
+            transcription.toLowerCase().includes(keyword)
+          );
+
+          const brands = brandKeywords.filter((keyword) =>
+            transcription.toLowerCase().includes(keyword)
+          );
+
+          const categories = categoryKeywords.filter((keyword) =>
+            transcription.toLowerCase().includes(keyword)
+          );
+
+          // Simple sentiment analysis
+          const positiveWords = ['good', 'great', 'delicious', 'amazing', 'love', 'excellent'];
+          const negativeWords = ['bad', 'terrible', 'awful', 'hate', 'disgusting'];
+
+          const positiveCount = positiveWords.filter((word) =>
+            transcription.toLowerCase().includes(word)
+          ).length;
+
+          const negativeCount = negativeWords.filter((word) =>
+            transcription.toLowerCase().includes(word)
+          ).length;
+
+          let sentiment: 'positive' | 'negative' | 'neutral' = 'neutral';
+          if (positiveCount > negativeCount) sentiment = 'positive';
+          else if (negativeCount > positiveCount) sentiment = 'negative';
+
+          resolve({
+            transcription,
+            detectedProducts,
+            sentiment,
+            confidence: Math.random() * 0.3 + 0.7, // 70-100% confidence
+            emotions:
+              sentiment === 'positive'
+                ? ['happy', 'satisfied']
+                : sentiment === 'negative'
+                ? ['disappointed']
+                : ['neutral'],
+            brands,
+            categories,
+            estimatedSpend: '$' + (Math.random() * 20 + 5).toFixed(2),
+            location: 'Detected from audio context'
+          });
+        }
+      }, 400);
+    });
   }
 
   async analyzeImage(imageBlob: Blob): Promise<AzureAIAnalysis> {

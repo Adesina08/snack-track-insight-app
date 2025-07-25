@@ -10,6 +10,8 @@ import { toast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { authUtils } from "@/lib/auth";
+import { NotificationService } from "@/lib/notifications";
+import NotificationPrompt from "@/components/NotificationPrompt";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -26,6 +28,20 @@ const Register = () => {
     agreeToMarketing: false
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+  const [nextPath, setNextPath] = useState<string>("/dashboard");
+
+  const handleEnableNotifications = async () => {
+    await NotificationService.requestPermission();
+    NotificationService.savePreferences(NotificationService.loadPreferences());
+    setShowNotificationPrompt(false);
+    navigate(nextPath);
+  };
+
+  const handleClosePrompt = () => {
+    setShowNotificationPrompt(false);
+    navigate(nextPath);
+  };
 
   // Load saved form data from localStorage on mount
   useEffect(() => {
@@ -91,7 +107,14 @@ const Register = () => {
         });
 
         const finished = localStorage.getItem("onboardingCompleted");
-        navigate(finished ? "/dashboard" : "/onboarding");
+        const path = finished ? "/dashboard" : "/onboarding";
+        const hasPrefs = localStorage.getItem("notification_preferences");
+        if (finished && !hasPrefs) {
+          setNextPath(path);
+          setShowNotificationPrompt(true);
+        } else {
+          navigate(path);
+        }
       }
     } catch (error) {
       console.error("Registration error:", error);
@@ -106,6 +129,7 @@ const Register = () => {
   };
 
   return (
+    <>
     <div className="min-h-screen gradient-secondary flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-6">
@@ -246,6 +270,12 @@ const Register = () => {
         </Card>
       </div>
     </div>
+    <NotificationPrompt
+      open={showNotificationPrompt}
+      onEnable={handleEnableNotifications}
+      onClose={handleClosePrompt}
+    />
+    </>
   );
 };
 
