@@ -8,12 +8,13 @@ import { Users, TrendingUp, Award, Database, Download, Calendar } from "lucide-r
 import Navigation from "@/components/Navigation";
 import { apiClient } from "@/lib/api-client";
 import ActivityCalendar from 'react-activity-calendar';
+import { ConsumptionLog } from "@/types/api";
 
 interface AdminStats {
   totalUsers: number;
   totalLogs: number;
   totalPoints: number;
-  recentActivity: any[];
+  recentActivity: ConsumptionLog[];
 }
 
 interface ActivityData {
@@ -46,8 +47,8 @@ const AdminDashboard = () => {
       
       // Calculate stats
       const totalLogs = logs.length;
-      const totalPoints = logs.reduce((sum: number, log: any) => sum + (log.points || 0), 0);
-      const uniqueUsers = new Set(logs.map((log: any) => log.userId)).size;
+      const totalPoints = logs.reduce((sum: number, log: ConsumptionLog) => sum + (log.points || 0), 0);
+      const uniqueUsers = new Set(logs.map((log: ConsumptionLog) => log.userId)).size;
       
       setStats({
         totalUsers: uniqueUsers,
@@ -90,7 +91,7 @@ const AdminDashboard = () => {
     return data;
   };
 
-  const generateActivityHeatmap = (analytics: any[]): ActivityData[] => {
+  const generateActivityHeatmap = (analytics: ConsumptionLog[]): ActivityData[] => {
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - 365);
