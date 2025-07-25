@@ -21,12 +21,20 @@ export class ApiClient {
     };
 
     const response = await fetch(url, config);
-    
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      let message = `Request failed with status ${response.status}`;
+      try {
+        const data = await response.json();
+        message = data.message || message;
+      } catch {
+        // ignore json parse errors
+      }
+      const error = new Error(message);
+      (error as any).status = response.status;
+      throw error;
     }
-    
+
     return response.json();
   }
 
