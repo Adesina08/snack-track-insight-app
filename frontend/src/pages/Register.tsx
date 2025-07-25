@@ -90,7 +90,8 @@ const Register = () => {
           description: "Welcome to SnackTrack. You can now start logging your consumption.",
         });
 
-        navigate("/dashboard");
+        const finished = localStorage.getItem("onboardingCompleted");
+        navigate(finished ? "/dashboard" : "/onboarding");
       }
     } catch (error) {
       console.error("Registration error:", error);
