@@ -1,7 +1,10 @@
 
 import { User } from '@/types/api';
 
-const JWT_SECRET = import.meta.env.VITE_JWT_SECRET || 'your-jwt-secret-key';
+const JWT_SECRET = import.meta.env.VITE_JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('VITE_JWT_SECRET environment variable is required');
+}
 
 export interface AuthTokenPayload {
   userId: string;

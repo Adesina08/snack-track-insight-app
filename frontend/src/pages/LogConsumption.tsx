@@ -41,16 +41,18 @@ const LogConsumption = () => {
   const companionOptions = ["Alone", "With friends", "With family", "With colleagues", "With partner"];
 
   useEffect(() => {
-    // Auto-initialize Azure Storage with default config (hidden from UI)
-    const defaultConfig = {
-      accountName: "naijasnackmedia",
-      containerName: "naijasnack-media",
-      sasToken: "?sv=2022-11-02&ss=b&srt=sco&sp=rwdlacx&se=2024-12-31T23:59:59Z"
-    };
-    
-    try {
-      initializeAzureStorage(defaultConfig);
-    } catch (error) {
+    // Initialize Azure Storage from environment variables if provided
+    const accountName = import.meta.env.VITE_AZURE_STORAGE_ACCOUNT as string | undefined;
+    const containerName = import.meta.env.VITE_AZURE_STORAGE_CONTAINER as string | undefined;
+    const sasToken = import.meta.env.VITE_AZURE_STORAGE_SAS as string | undefined;
+
+    if (accountName && containerName && sasToken) {
+      try {
+        initializeAzureStorage({ accountName, containerName, sasToken });
+      } catch (error) {
+        console.log("Azure Storage initialization failed", error);
+      }
+    } else {
       console.log("Azure Storage not configured, will use local storage");
     }
 
