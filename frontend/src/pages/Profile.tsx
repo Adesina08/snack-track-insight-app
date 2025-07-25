@@ -165,8 +165,12 @@ const Profile = () => {
     setNotifications(updatedPrefs);
     NotificationService.savePreferences(updatedPrefs);
     
-    if (key === 'enableNotifications' && value) {
-      NotificationService.requestPermission();
+    if (key === 'enableNotifications') {
+      if (value && user) {
+        NotificationService.enablePush(user.id);
+      } else {
+        NotificationService.disablePush();
+      }
     }
     
     toast({

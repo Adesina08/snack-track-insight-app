@@ -1,4 +1,17 @@
 // Notification utilities for the app
+import { initializeApp } from 'firebase/app';
+import { getMessaging, getToken as getFCMToken } from 'firebase/messaging';
+import { apiClient } from './api-client';
+
+const firebaseApp = initializeApp({
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+});
+
+const messaging = getMessaging(firebaseApp);
 export interface NotificationPreferences {
   enableNotifications: boolean;
   dailyReminders: boolean;
@@ -9,6 +22,37 @@ export interface NotificationPreferences {
 
 export class NotificationService {
   private static readonly STORAGE_KEY = 'notification_preferences';
+  private static readonly TOKEN_KEY = 'push_token';
+
+  private static async getPushToken(): Promise<string | null> {
+    try {
+      const token = await getFCMToken(messaging, {
+        vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+      });
+      return token;
+    } catch (err) {
+      console.error('Failed to get FCM token', err);
+      return null;
+    }
+  }
+
+  static async enablePush(userId: string): Promise<void> {
+    const allowed = await this.requestPermission();
+    if (!allowed) return;
+    const token = await this.getPushToken();
+    if (token) {
+      localStorage.setItem(this.TOKEN_KEY, token);
+      await apiClient.registerPushToken(userId, token);
+    }
+  }
+
+  static async disablePush(): Promise<void> {
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    if (token) {
+      await apiClient.unregisterPushToken(token);
+      localStorage.removeItem(this.TOKEN_KEY);
+    }
+  }
 
   // Request notification permission
   static async requestPermission(): Promise<boolean> {
