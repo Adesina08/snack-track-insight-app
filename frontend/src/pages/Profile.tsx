@@ -202,7 +202,7 @@ const Profile = () => {
                 <CardContent className="p-6 text-center">
                   <div className="relative inline-block mb-4">
                     <Avatar className="w-24 h-24">
-                      <AvatarImage src="/placeholder.svg" alt="Profile" />
+                      <AvatarImage src="/placeholder.svg" alt="User profile photo" />
                       <AvatarFallback className="gradient-primary text-white text-2xl">
                         AO
                       </AvatarFallback>
