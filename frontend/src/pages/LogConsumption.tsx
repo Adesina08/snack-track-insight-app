@@ -11,7 +11,7 @@ import { Mic, Video, Sparkles, Zap, Upload } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
-import { azureDbOperations as dbOperations } from "@/lib/azure-database";
+import { localDbOperations as dbOperations } from "@/lib/local-db";
 import { authUtils } from "@/lib/auth";
 import { azureAI, AzureAIAnalysis } from "@/lib/azure-ai";
 import { getAzureStorage, initializeAzureStorage } from "@/lib/azure-storage";
