@@ -13,7 +13,7 @@ import Navigation from "@/components/Navigation";
 import { authUtils } from "@/lib/auth";
 import { User as UserType } from "@/types/api";
 import { NotificationService, NotificationPreferences } from "@/lib/notifications";
-import { apiClient } from "@/lib/api-client";
+import { localDbOperations } from "@/lib/local-db";
 
 const Profile = () => {
   const [user, setUser] = useState<UserType | null>(null);
@@ -66,7 +66,7 @@ const Profile = () => {
       const currentUser = await authUtils.getCurrentUser();
       if (currentUser) {
         // Load user's consumption logs to calculate stats
-        const logs = await apiClient.getUserConsumptionLogs(currentUser.id);
+        const logs = await localDbOperations.getUserConsumptionLogs(currentUser.id);
         
         // Calculate streak
         const streak = calculateStreak(logs);

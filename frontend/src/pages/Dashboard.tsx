@@ -8,7 +8,7 @@ import { Camera, Plus, Gift, TrendingUp, MapPin, Clock, Users, Star } from "luci
 import { Link, useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { authUtils } from "@/lib/auth";
-import { apiClient } from "@/lib/api-client";
+import { localDbOperations } from "@/lib/local-db";
 import { User, ConsumptionLog } from "@/types/api";
 
 const Dashboard = () => {
@@ -40,7 +40,7 @@ const Dashboard = () => {
         setUser(currentUser);
         
         // Load user's consumption logs
-        const logs = await apiClient.getUserConsumptionLogs(currentUser.id);
+        const logs = await localDbOperations.getUserConsumptionLogs(currentUser.id);
         setRecentLogs(logs.slice(0, 3)); // Get latest 3 logs
         
         // Calculate dashboard stats from logs
@@ -89,9 +89,9 @@ const Dashboard = () => {
 
   const calculateUserRank = async (userId: string) => {
     try {
-      // This would need a proper leaderboard endpoint
-      // For now, return a placeholder
-      return Math.floor(Math.random() * 100) + 1;
+      const leaderboard = await localDbOperations.getLeaderboard();
+      const index = leaderboard.findIndex(u => u.id === userId);
+      return index >= 0 ? index + 1 : leaderboard.length + 1;
     } catch (error) {
       return 0;
     }

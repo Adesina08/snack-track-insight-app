@@ -89,6 +89,11 @@ export const localDbOperations = {
     return users.find(u => u.email === email) || null;
   },
 
+  async getUserById(id: string): Promise<User | null> {
+    const users = load<User>(STORAGE_KEYS.users);
+    return users.find(u => u.id === id) || null;
+  },
+
   async updateUserPoints(userId: string, points: number): Promise<User> {
     const users = load<User>(STORAGE_KEYS.users);
     const user = users.find(u => u.id === userId);
@@ -124,5 +129,12 @@ export const localDbOperations = {
   async getRewards(): Promise<Reward[]> {
     const rewards = ensureRewards();
     return rewards.filter(r => r.isActive).sort((a,b) => a.pointsRequired - b.pointsRequired);
+  },
+
+  async getLeaderboard(): Promise<Array<{ id: string; name: string; points: number }>> {
+    const users = load<User>(STORAGE_KEYS.users);
+    const filtered = users.filter(u => u.email !== 'admin@inicio-insights.com');
+    const sorted = filtered.sort((a,b) => (b.points || 0) - (a.points || 0));
+    return sorted.map(u => ({ id: u.id, name: `${u.firstName} ${u.lastName}`, points: u.points || 0 }));
   }
 };

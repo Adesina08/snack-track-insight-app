@@ -17,6 +17,7 @@ const Rewards = () => {
   const [userPoints, setUserPoints] = useState(0);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [leaderboard, setLeaderboard] = useState<Array<{ id: string; name: string; points: number }>>([]);
   
   useEffect(() => {
     loadRewardsData();
@@ -33,6 +34,9 @@ const Rewards = () => {
       // Load available rewards from database
       const availableRewards = await localDbOperations.getRewards();
       setRewards(availableRewards);
+
+      const board = await localDbOperations.getLeaderboard();
+      setLeaderboard(board);
     } catch (error) {
       console.error('Error loading rewards data:', error);
       // Fallback to static rewards if API fails
@@ -180,14 +184,6 @@ const Rewards = () => {
   // Use database rewards if available, otherwise fallback to static
   const displayRewards = rewards.length > 0 ? rewards : staticRewardItems;
 
-  const leaderboard = [
-    { rank: 1, name: "Adebayo Lagos", points: 3450, avatar: "👑" },
-    { rank: 2, name: "Fatima Kano", points: 3200, avatar: "🥈" },
-    { rank: 3, name: "Emeka Enugu", points: 2890, avatar: "🥉" },
-    { rank: 4, name: "Aisha Abuja", points: 2650, avatar: "⭐" },
-    { rank: 5, name: "Tunde Ibadan", points: 2400, avatar: "🌟" },
-    { rank: 6, name: "You", points: userPoints, avatar: "😊", isUser: true }
-  ];
 
   const achievements = [
     {
@@ -338,37 +334,42 @@ const Rewards = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {leaderboard.map((user) => (
+                  {leaderboard.map((entry, idx) => {
+                    const rank = idx + 1;
+                    const isUserEntry = user && entry.id === user.id;
+                    const medal = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+                    return (
                     <div
-                      key={user.rank}
+                      key={entry.id}
                       className={`flex items-center justify-between p-4 rounded-lg ${
-                        user.isUser ? "gradient-accent border-2 border-blue-300" : "bg-blue-50"
+                        isUserEntry ? "gradient-accent border-2 border-blue-300" : "bg-blue-50"
                       }`}
                     >
                       <div className="flex items-center space-x-4">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold ${
-                          user.rank === 1 ? "bg-yellow-500 text-white" :
-                          user.rank === 2 ? "bg-gray-400 text-white" :
-                          user.rank === 3 ? "bg-orange-500 text-white" :
+                          rank === 1 ? "bg-yellow-500 text-white" :
+                          rank === 2 ? "bg-gray-400 text-white" :
+                          rank === 3 ? "bg-orange-500 text-white" :
                           "bg-blue-200 text-blue-700"
                         }`}>
-                          {user.rank <= 3 ? user.avatar : user.rank}
+                          {medal}
                         </div>
                         <div>
-                          <p className={`font-semibold ${user.isUser ? "text-blue-700" : "text-gray-800"}`}>
-                            {user.name}
-                            {user.isUser && " (You)"}
+                          <p className={`font-semibold ${isUserEntry ? "text-blue-700" : "text-gray-800"}`}>
+                            {entry.name}
+                            {isUserEntry && " (You)"}
                           </p>
-                          <p className="text-sm text-gray-600">Rank #{user.rank}</p>
+                          <p className="text-sm text-gray-600">Rank #{rank}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className={`font-bold ${user.isUser ? "text-blue-600" : "text-gray-800"}`}>
-                          {user.points.toLocaleString()} pts
+                        <p className={`font-bold ${isUserEntry ? "text-blue-600" : "text-gray-800"}`}>
+                          {entry.points.toLocaleString()} pts
                         </p>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

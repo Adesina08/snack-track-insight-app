@@ -42,8 +42,6 @@ Create a `.env` file in the project root (or use your hosting provider's configu
 
 VITE_JWT_SECRET=<your secret key>
 
-
-
 The app requires `VITE_JWT_SECRET` for authentication tokens. Media files are stored locally in the `backend/uploads` directory.
 
 **Edit a file directly in GitHub**
