@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { initializeAzureStorage } from "@/lib/azure-storage";
+// Local file storage does not require configuration
 
 interface AzureCredentialsSetupProps {
   onConfigured: () => void;
@@ -30,29 +30,10 @@ export function AzureCredentialsSetup({ onConfigured }: AzureCredentialsSetupPro
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSaveStorage = async () => {
-    if (!storageConfig.accountName || !storageConfig.containerName || !storageConfig.sasToken) {
-      toast.error("Please fill in all Azure Storage fields");
-      return;
-    }
-
     setIsLoading(true);
     try {
-      // Initialize Azure Storage
-      initializeAzureStorage({
-        accountName: storageConfig.accountName,
-        containerName: storageConfig.containerName,
-        sasToken: storageConfig.sasToken
-      });
-
-      // Save to localStorage
-      localStorage.setItem('azure_storage_account', storageConfig.accountName);
-      localStorage.setItem('azure_storage_container', storageConfig.containerName);
-      localStorage.setItem('azure_storage_sas', storageConfig.sasToken);
-
-      toast.success("Azure Storage configured successfully!");
-    } catch (error) {
-      console.error("Azure Storage configuration error:", error);
-      toast.error("Failed to configure Azure Storage");
+      toast.success("Local file storage enabled.");
+      onConfigured();
     } finally {
       setIsLoading(false);
     }
