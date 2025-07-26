@@ -25,13 +25,16 @@ npm install
 npm run dev
 ```
 
-To run the **backend** API server:
+To run the **backend** API server (requires Python and the `whisper` package):
 
 ```sh
 cd backend
 npm install
+pip install -r requirements.txt
 npm start
 ```
+
+The server automatically creates an `uploads` folder for media files if it does not exist.
 
 ### Environment Variables
 
@@ -39,12 +42,13 @@ Create a `.env` file in the project root (or use your hosting provider's configu
 
 ```
 VITE_JWT_SECRET=<your secret key>
-VITE_AZURE_STORAGE_ACCOUNT=<your storage account>
-VITE_AZURE_STORAGE_CONTAINER=<your container name>
-VITE_AZURE_STORAGE_SAS=<your SAS token>
 ```
 
-The app requires `VITE_JWT_SECRET` for authentication tokens. Azure Storage variables are optional but enable media uploads if provided.
+The app requires `VITE_JWT_SECRET` for authentication tokens. Media files are stored locally in the `backend/uploads` directory.
+
+### Local database
+
+User accounts, consumption logs and rewards are kept in the browser's `localStorage` via `frontend/src/lib/local-db.ts`. The application does not use an external database, so there are no credentials or connection strings to set.
 
 **Edit a file directly in GitHub**
 
