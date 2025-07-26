@@ -40,7 +40,6 @@ The server automatically creates an `uploads` folder for media files if it does 
 
 Create a `.env` file in the project root (or use your hosting provider's configuration) and define the following variables:
 
-```
 VITE_JWT_SECRET=<your secret key>
 DATABASE_URL=postgres://snackuser:snackpass@localhost:5432/snacktrack
 ```
@@ -51,13 +50,10 @@ The app requires `VITE_JWT_SECRET` for authentication tokens. `DATABASE_URL` poi
 
 Data is persisted in PostgreSQL. The backend will automatically create the necessary tables and seed a few rewards on first run. Ensure a local PostgreSQL server is running and `DATABASE_URL` is set appropriately.
 
-If you don't already have PostgreSQL installed, you can quickly start one with Docker:
 
-```sh
 docker run --name snacktrack-postgres -e POSTGRES_USER=snackuser \
   -e POSTGRES_PASSWORD=snackpass -e POSTGRES_DB=snacktrack \
   -p 5432:5432 -d postgres
-```
 
 **Edit a file directly in GitHub**
 

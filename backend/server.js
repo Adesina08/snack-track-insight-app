@@ -29,6 +29,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
   res.json({ url, filename: req.file.filename });
 });
 
+
 app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No audio file uploaded' });
