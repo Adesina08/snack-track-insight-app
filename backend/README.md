@@ -7,6 +7,7 @@ This directory contains a minimal Express server used by the Snack Track Insight
 ```sh
 cd backend
 npm install
+pip install -r requirements.txt
 npm start
 ```
 
