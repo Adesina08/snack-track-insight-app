@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Camera, Plus, Gift, TrendingUp, MapPin, Clock, Users, Star } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { authUtils } from "@/lib/auth";
 import { apiClient } from "@/lib/api-client";
@@ -15,12 +15,19 @@ const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [recentLogs, setRecentLogs] = useState<ConsumptionLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
   const [dashboardStats, setDashboardStats] = useState({
     totalPoints: 0,
     thisWeekLogs: 0,
     streak: 0,
     rank: 0
   });
+
+  useEffect(() => {
+    if (!localStorage.getItem("onboardingCompleted")) {
+      navigate("/onboarding", { replace: true });
+    }
+  }, [navigate]);
 
   useEffect(() => {
     loadDashboardData();
