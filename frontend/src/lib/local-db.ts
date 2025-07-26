@@ -60,6 +60,11 @@ export const localDbOperations = {
     return request<User | null>(`/users/${id}`);
   },
 
+  async getUserById(id: string): Promise<User | null> {
+    const users = load<User>(STORAGE_KEYS.users);
+    return users.find(u => u.id === id) || null;
+  },
+
   async updateUserPoints(userId: string, points: number): Promise<User> {
     return request<User>(`/users/${userId}/points`, {
       method: 'PATCH',

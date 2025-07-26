@@ -6,6 +6,7 @@ import { spawn } from 'child_process';
 import crypto from 'node:crypto';
 import { pool, initDb } from './db.js';
 
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 const uploadsDir = path.join(process.cwd(), 'uploads');
@@ -28,6 +29,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
   const url = `/uploads/${req.file.filename}`;
   res.json({ url, filename: req.file.filename });
 });
+
 
 app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
   if (!req.file) {

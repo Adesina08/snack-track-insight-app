@@ -40,7 +40,6 @@ The server automatically creates an `uploads` folder for media files if it does 
 
 Create a `.env` file in the project root (or use your hosting provider's configuration) and define the following variables:
 
-```
 VITE_JWT_SECRET=<your secret key>
 DATABASE_URL=postgres://snackuser:snackpass@localhost:5432/snacktrack
 ```
@@ -50,6 +49,7 @@ The app requires `VITE_JWT_SECRET` for authentication tokens. `DATABASE_URL` poi
 ### Local database
 
 Data is persisted in PostgreSQL. The backend will automatically create the necessary tables and seed a few rewards on first run. Ensure a local PostgreSQL server is running and `DATABASE_URL` is set appropriately.
+
 
 **Edit a file directly in GitHub**
 
