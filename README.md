@@ -25,33 +25,26 @@ npm install
 npm run dev
 ```
 
-To run the **backend** API server:
+To run the **backend** API server (requires Python and the `whisper` package):
 
 ```sh
 cd backend
 npm install
+pip install -r requirements.txt
 npm start
 ```
+
+The server automatically creates an `uploads` folder for media files if it does not exist.
 
 ### Environment Variables
 
 Create a `.env` file in the project root (or use your hosting provider's configuration) and define the following variables:
 
-```
 VITE_JWT_SECRET=<your secret key>
-VITE_AZURE_STORAGE_ACCOUNT=<your storage account>
-VITE_AZURE_STORAGE_CONTAINER=<your container name>
-VITE_AZURE_STORAGE_SAS=<your SAS token>
-VITE_FIREBASE_API_KEY=<firebase api key>
-VITE_FIREBASE_AUTH_DOMAIN=<firebase auth domain>
-VITE_FIREBASE_PROJECT_ID=<firebase project id>
-VITE_FIREBASE_MESSAGING_SENDER_ID=<firebase sender id>
-VITE_FIREBASE_APP_ID=<firebase app id>
-VITE_FIREBASE_VAPID_KEY=<public vapid key>
-FIREBASE_SERVICE_ACCOUNT=<service account JSON>
-```
 
-The app requires `VITE_JWT_SECRET` for authentication tokens. Azure Storage variables are optional but enable media uploads if provided.
+
+
+The app requires `VITE_JWT_SECRET` for authentication tokens. Media files are stored locally in the `backend/uploads` directory.
 
 **Edit a file directly in GitHub**
 
