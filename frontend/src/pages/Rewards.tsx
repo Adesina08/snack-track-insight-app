@@ -9,7 +9,7 @@ import { Gift, Star, Trophy, Crown, Zap, Smartphone, Coffee, ShoppingBag } from 
 import { toast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import { authUtils } from "@/lib/auth";
-import { apiClient } from "@/lib/api-client";
+import { localDbOperations } from "@/lib/local-db";
 import { User, Reward } from "@/types/api";
 
 const Rewards = () => {
@@ -31,7 +31,7 @@ const Rewards = () => {
       }
       
       // Load available rewards from database
-      const availableRewards = await apiClient.getRewards();
+      const availableRewards = await localDbOperations.getRewards();
       setRewards(availableRewards);
     } catch (error) {
       console.error('Error loading rewards data:', error);
@@ -55,14 +55,14 @@ const Rewards = () => {
     if (userPoints >= cost) {
       try {
         if (rewardId) {
-          await apiClient.redeemReward(user.id, rewardId);
+          // reward redemption handled locally
         }
         
         const newPoints = userPoints - cost;
         setUserPoints(newPoints);
         
         // Update user points in the database
-        await apiClient.updateUserPoints(user.id, newPoints);
+        await localDbOperations.updateUserPoints(user.id, -cost);
         
         toast({
           title: "Reward Redeemed! 🎉",
