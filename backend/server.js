@@ -6,7 +6,6 @@ import { spawn } from 'child_process';
 import crypto from 'node:crypto';
 import { pool, initDb } from './db.js';
 
-
 const app = express();
 const PORT = process.env.PORT || 4000;
 const uploadsDir = path.join(process.cwd(), 'uploads');

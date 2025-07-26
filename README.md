@@ -51,6 +51,10 @@ The app requires `VITE_JWT_SECRET` for authentication tokens. `DATABASE_URL` poi
 Data is persisted in PostgreSQL. The backend will automatically create the necessary tables and seed a few rewards on first run. Ensure a local PostgreSQL server is running and `DATABASE_URL` is set appropriately.
 
 
+docker run --name snacktrack-postgres -e POSTGRES_USER=snackuser \
+  -e POSTGRES_PASSWORD=snackpass -e POSTGRES_DB=snacktrack \
+  -p 5432:5432 -d postgres
+
 **Edit a file directly in GitHub**
 
 - Navigate to the desired file(s).
