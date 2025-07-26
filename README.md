@@ -40,9 +40,7 @@ The server automatically creates an `uploads` folder for media files if it does 
 
 Create a `.env` file in the project root (or use your hosting provider's configuration) and define the following variables:
 
-```
 VITE_JWT_SECRET=<your secret key>
-```
 
 The app requires `VITE_JWT_SECRET` for authentication tokens. Media files are stored locally in the `backend/uploads` directory.
 
