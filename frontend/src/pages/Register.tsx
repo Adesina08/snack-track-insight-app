@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
+import { localDbOperations } from "@/lib/local-db";
 import { authUtils } from "@/lib/auth";
 import { NotificationService } from "@/lib/notifications";
 import NotificationPrompt from "@/components/NotificationPrompt";
@@ -87,16 +87,17 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      const response = await apiClient.register({
+      const passwordHash = await authUtils.hashPassword(formData.password);
+      const user = await localDbOperations.createUser({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         phone: formData.phone,
-        password: formData.password,
+        passwordHash,
       });
 
-      if (response.user) {
-        const token = await authUtils.generateToken(response.user);
+      if (user) {
+        const token = await authUtils.generateToken(user);
         authUtils.setAuthToken(token);
 
         localStorage.removeItem("registerForm"); // Clear saved form on success

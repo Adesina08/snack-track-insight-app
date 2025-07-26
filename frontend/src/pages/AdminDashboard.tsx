@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, TrendingUp, Award, Database, Download, Calendar } from "lucide-react";
 import Navigation from "@/components/Navigation";
-import { apiClient } from "@/lib/api-client";
+import { localDbOperations } from "@/lib/local-db";
 import ActivityCalendar from 'react-activity-calendar';
 import { ConsumptionLog } from "@/types/api";
 
@@ -42,8 +42,8 @@ const AdminDashboard = () => {
       setIsLoading(true);
       
       // Load consumption logs for analytics
-      const logs = await apiClient.getAllConsumptionLogs();
-      const analytics = await apiClient.getConsumptionAnalytics();
+      const logs = await localDbOperations.getAllConsumptionLogs();
+      const analytics = await localDbOperations.getConsumptionAnalytics();
       
       // Calculate stats
       const totalLogs = logs.length;
@@ -133,7 +133,7 @@ const AdminDashboard = () => {
 
   const exportData = async () => {
     try {
-      const logs = await apiClient.getAllConsumptionLogs();
+      const logs = await localDbOperations.getAllConsumptionLogs();
       const csvContent = [
         'Date,User,Product,Brand,Category,Spend,Method,Points',
         ...logs.map(log => [

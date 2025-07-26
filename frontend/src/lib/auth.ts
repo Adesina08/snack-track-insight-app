@@ -1,5 +1,6 @@
 
 import { User } from '@/types/api';
+import { localDbOperations } from './local-db';
 
 const JWT_SECRET = import.meta.env.VITE_JWT_SECRET;
 if (!JWT_SECRET) {
@@ -156,15 +157,12 @@ export const authUtils = {
     }
 
     try {
-      // For now, return a mock user. In a real app, fetch from API
-      return {
-        id: payload.userId,
-        email: payload.email,
-        firstName: 'User',
-        lastName: 'Name',
-        createdAt: new Date().toISOString(),
-        points: 0
-      };
+      const user = await localDbOperations.getUserById(payload.userId);
+      if (!user) {
+        this.removeAuthToken();
+        return null;
+      }
+      return user;
     } catch (error) {
       this.removeAuthToken();
       return null;
