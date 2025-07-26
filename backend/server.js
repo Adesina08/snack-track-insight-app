@@ -1,13 +1,15 @@
 import express from 'express';
 import admin from 'firebase-admin';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import multer from 'multer';
 import cron from 'node-cron';
 import multer from 'multer';
 import OpenAI from 'openai';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-
 const upload = multer({ dest: 'uploads/' });
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -35,6 +37,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 }
 
 app.use(express.json());
+app.use('/uploads', express.static(UPLOAD_DIR));
 
 app.post('/api/push/register', (req, res) => {
   const { userId, token } = req.body;
@@ -98,10 +101,10 @@ cron.schedule('0 19 * * *', () => {
   sendDailyReminders();
 });
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+=======
+// Firebase push notifications disabled
+const app = express();
+const PORT = process.env.PORT || 4000;
+// Push token management disabled
+app.use(express.json());
+// Push registration endpoints and cron job removed

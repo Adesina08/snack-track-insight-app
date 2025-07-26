@@ -11,10 +11,10 @@ import { Mic, Video, Sparkles, Zap, Upload } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
-import { azureDbOperations as dbOperations } from "@/lib/azure-database";
+import { localDbOperations as dbOperations } from "@/lib/local-db";
 import { authUtils } from "@/lib/auth";
 import { azureAI, AzureAIAnalysis } from "@/lib/azure-ai";
-import { getAzureStorage, initializeAzureStorage } from "@/lib/azure-storage";
+import { getLocalStorage } from "@/lib/local-storage";
 import { MediaCompressor } from "@/lib/media-compression";
 import { LocationService, LocationData } from "@/lib/location";
 
@@ -43,22 +43,6 @@ const LogConsumption = () => {
   const companionOptions = ["Alone", "With friends", "With family", "With colleagues", "With partner"];
 
   useEffect(() => {
-    // Initialize Azure Storage from environment variables if provided
-    const accountName = import.meta.env.VITE_AZURE_STORAGE_ACCOUNT as string | undefined;
-    const containerName = import.meta.env.VITE_AZURE_STORAGE_CONTAINER as string | undefined;
-    const sasToken = import.meta.env.VITE_AZURE_STORAGE_SAS as string | undefined;
-
-    if (accountName && containerName && sasToken) {
-      try {
-        initializeAzureStorage({ accountName, containerName, sasToken });
-      } catch (error) {
-        console.log("Azure Storage initialization failed", error);
-      }
-    } else {
-      console.log("Azure Storage not configured, will use local storage");
-    }
-
-    // Get location when component mounts
     getCurrentLocation();
   }, []);
 
@@ -200,11 +184,9 @@ const LogConsumption = () => {
 
       let mediaUrl = '';
       
-      // Compress and upload to Azure Storage if file exists and storage is configured
+      // Compress and upload locally if a file was recorded
       if (selectedFile) {
-        const azureStorage = getAzureStorage();
-        if (azureStorage) {
-          let fileToUpload = selectedFile;
+        let fileToUpload = selectedFile;
           
           // Compress media before upload
           if (selectedFile.type.startsWith('image/')) {
@@ -217,11 +199,11 @@ const LogConsumption = () => {
             }
           }
           
-          const uploadResult = await azureStorage.uploadFile(fileToUpload);
+          const localStorageService = getLocalStorage();
+          const uploadResult = await localStorageService.uploadFile(fileToUpload);
           if (uploadResult.success) {
             mediaUrl = uploadResult.url;
           }
-        }
       }
 
       // Calculate points based on submission
@@ -436,7 +418,7 @@ const LogConsumption = () => {
                       {isSubmitting ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Uploading to Azure & Saving...
+                          Uploading & Saving...
                         </>
                       ) : (
                         <>
