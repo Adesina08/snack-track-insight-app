@@ -2,9 +2,14 @@ import express from 'express';
 import admin from 'firebase-admin';
 import fs from 'fs';
 import cron from 'node-cron';
+import multer from 'multer';
+import OpenAI from 'openai';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+
+const upload = multer({ dest: 'uploads/' });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const TOKENS_FILE = new URL('./push-tokens.json', import.meta.url).pathname;
 let pushTokens = [];
@@ -51,6 +56,23 @@ app.post('/api/push/unregister', (req, res) => {
   pushTokens = pushTokens.filter(t => t.token !== token);
   saveTokens();
   res.json({ status: 'unregistered' });
+});
+
+app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No audio file uploaded' });
+  }
+  try {
+    const transcription = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(req.file.path),
+      model: 'whisper-1',
+    });
+    fs.unlink(req.file.path, () => {});
+    res.json({ text: transcription.text });
+  } catch (err) {
+    console.error('Transcription failed', err);
+    res.status(500).json({ message: 'Transcription failed' });
+  }
 });
 
 async function sendPushNotification(token, payload) {
