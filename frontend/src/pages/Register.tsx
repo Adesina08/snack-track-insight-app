@@ -106,6 +106,8 @@ const Register = () => {
           description: "Welcome to SnackTrack. You can now start logging your consumption.",
         });
 
+        // TODO: create-onboarding-component-with-local-storage
+
         const finished = localStorage.getItem("onboardingCompleted");
         const path = finished ? "/dashboard" : "/onboarding";
         const hasPrefs = localStorage.getItem("notification_preferences");

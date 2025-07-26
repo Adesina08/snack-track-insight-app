@@ -20,28 +20,21 @@ export class AzureAIService {
     audioBlob: Blob,
     onProgress?: (progress: number) => void
   ): Promise<string> {
-    // For browser environment, we'll use a simulated transcription
-    // In production, you would send the audio to Azure Speech Service via REST API
-    return new Promise((resolve) => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 20;
-        onProgress?.(Math.min(progress, 100));
-        if (progress >= 100) {
-          clearInterval(interval);
-          const mockTranscriptions = [
-            'I just had some delicious jollof rice with chicken',
-            'Enjoying suya and pepper soup with friends',
-            'Had pounded yam and egusi soup for dinner',
-            'Drinking coca-cola with my meal',
-            'Just finished eating chin chin and groundnuts'
-          ];
-          const randomTranscription =
-            mockTranscriptions[Math.floor(Math.random() * mockTranscriptions.length)];
-          resolve(randomTranscription);
-        }
-      }, 400);
+    const formData = new FormData();
+    formData.append('audio', audioBlob);
+
+    const response = await fetch('/api/transcribe', {
+      method: 'POST',
+      body: formData,
     });
+
+    if (!response.ok) {
+      throw new Error('Transcription failed');
+    }
+
+    const data: { text: string } = await response.json();
+    onProgress?.(100);
+    return data.text;
   }
 
   async analyzeConsumption(

@@ -5,24 +5,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
 import cron from 'node-cron';
+import multer from 'multer';
+import OpenAI from 'openai';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const UPLOAD_DIR = path.join(__dirname, 'uploads');
-fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: UPLOAD_DIR,
-  filename: (_req, file, cb) => {
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 8);
-    const ext = path.extname(file.originalname);
-    cb(null, `${timestamp}-${random}${ext}`);
-  }
-});
-const upload = multer({ storage });
+const upload = multer({ dest: 'uploads/' });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const TOKENS_FILE = new URL('./push-tokens.json', import.meta.url).pathname;
 let pushTokens = [];
@@ -72,13 +61,21 @@ app.post('/api/push/unregister', (req, res) => {
   res.json({ status: 'unregistered' });
 });
 
-app.post('/api/upload', upload.single('file'), (req, res) => {
+app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ message: 'No file uploaded' });
+    return res.status(400).json({ message: 'No audio file uploaded' });
   }
-  const filename = req.file.filename;
-  const url = `/uploads/${filename}`;
-  res.json({ url, filename });
+  try {
+    const transcription = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(req.file.path),
+      model: 'whisper-1',
+    });
+    fs.unlink(req.file.path, () => {});
+    res.json({ text: transcription.text });
+  } catch (err) {
+    console.error('Transcription failed', err);
+    res.status(500).json({ message: 'Transcription failed' });
+  }
 });
 
 async function sendPushNotification(token, payload) {
