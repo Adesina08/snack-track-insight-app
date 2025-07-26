@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
+import { localDbOperations } from "@/lib/local-db";
 import { authUtils } from "@/lib/auth";
 import { NotificationService } from "@/lib/notifications";
 import NotificationPrompt from "@/components/NotificationPrompt";
@@ -43,11 +43,10 @@ const Login = () => {
     try {
       setIsLoading(true);
       
-      const response = await apiClient.login(formData.email, formData.password);
-      
-      if (response.user) {
+      const user = await localDbOperations.getUserByEmail(formData.email);
+      if (user && await authUtils.verifyPassword(formData.password, user.passwordHash)) {
         // Generate JWT token
-        const token = await authUtils.generateToken(response.user);
+        const token = await authUtils.generateToken(user);
         authUtils.setAuthToken(token);
 
         toast({
@@ -55,7 +54,7 @@ const Login = () => {
           description: "You have successfully logged in to SnackTrack.",
         });
 
-        const path = authUtils.isAdminUser(response.user) ? "/admin" : "/dashboard";
+        const path = authUtils.isAdminUser(user) ? "/admin" : "/dashboard";
 
         const hasPrefs = localStorage.getItem('notification_preferences');
         if (!hasPrefs) {
@@ -64,6 +63,12 @@ const Login = () => {
         } else {
           navigate(path);
         }
+      } else {
+        toast({
+          title: 'Invalid credentials',
+          description: 'Email or password is incorrect.',
+          variant: 'destructive'
+        });
       }
     } catch (error) {
       console.error('Login error:', error);
