@@ -40,15 +40,14 @@ The server automatically creates an `uploads` folder for media files if it does 
 
 Create a `.env` file in the project root (or use your hosting provider's configuration) and define the following variables:
 
-```
 VITE_JWT_SECRET=<your secret key>
-```
 
 The app requires `VITE_JWT_SECRET` for authentication tokens. Media files are stored locally in the `backend/uploads` directory.
 
 ### Local database
 
 User accounts, consumption logs and rewards are kept in the browser's `localStorage` via `frontend/src/lib/local-db.ts`. The application does not use an external database, so there are no credentials or connection strings to set.
+
 
 **Edit a file directly in GitHub**
 
