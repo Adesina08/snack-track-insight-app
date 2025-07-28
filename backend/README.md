@@ -15,7 +15,7 @@ The server listens on `PORT` (defaults to `4000`) and uses the `DATABASE_URL` en
 
 ### Environment variables
 
-Create a `.env` file in this directory with at least the following variables:
+Copy the `.env.example` file from the repository root to `.env` in this directory and define at least the following variables:
 
 ```env
 DATABASE_URL=postgres://snackuser:snackpass@localhost:5432/snacktrack
