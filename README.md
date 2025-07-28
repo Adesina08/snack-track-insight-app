@@ -54,9 +54,14 @@ DB_PORT=5432
 DB_USER=snackuser
 DB_PASSWORD=snackpass
 DB_NAME=snacktrack
+AZURE_STORAGE_CONNECTION_STRING=<your connection string>
+AZURE_AUDIO_CONTAINER=audio-logs
+AZURE_MEDIA_CONTAINER=media-logs
 ```
 
-The app requires `VITE_JWT_SECRET` for authentication tokens. The `DB_*` variables define the PostgreSQL connection used by the backend. When deploying on services like Render, use the host, port, username and password provided by the platform. SSL is automatically enabled for any host that is not `localhost`. Media files are stored locally in the `backend/uploads` directory.
+The app requires `VITE_JWT_SECRET` for authentication tokens. The `DB_*` variables define the PostgreSQL connection used by the backend. When deploying on services like Render, use the host, port, username and password provided by the platform. SSL is automatically enabled for any host that is not `localhost`.
+
+If `AZURE_STORAGE_CONNECTION_STRING` is provided, uploaded audio and video files are automatically pushed to the specified storage containers (`AZURE_AUDIO_CONTAINER` for audio-only logs and `AZURE_MEDIA_CONTAINER` for video or mixed media). If these variables are not set the files are saved locally in `backend/uploads`.
 
 ### Local database
 

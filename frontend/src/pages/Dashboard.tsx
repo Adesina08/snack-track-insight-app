@@ -33,10 +33,15 @@ const Dashboard = () => {
   const [dailyProgress, setDailyProgress] = useState<number[]>(
     Array(7).fill(0),
   );
+  const [firstLogin, setFirstLogin] = useState(false);
 
   useEffect(() => {
     if (!localStorage.getItem("onboardingCompleted")) {
       navigate("/onboarding", { replace: true });
+    }
+    if (localStorage.getItem("firstLogin")) {
+      setFirstLogin(true);
+      localStorage.removeItem("firstLogin");
     }
   }, [navigate]);
 
@@ -143,7 +148,7 @@ const Dashboard = () => {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gradient mb-2">
-            Welcome back, {user?.firstName || "there"}! 👋
+            {firstLogin ? "Welcome" : "Welcome back"}, {user?.firstName || "there"}! 👋
           </h1>
           <p className="text-muted-foreground">
             Ready to log another delicious Naija meal?

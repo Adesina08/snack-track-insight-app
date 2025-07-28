@@ -36,6 +36,20 @@ export interface Reward {
   isActive: boolean;
 }
 
+function toCamelCase(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map((v) => toCamelCase(v));
+  }
+  if (obj && typeof obj === 'object') {
+    return Object.entries(obj).reduce((acc: any, [key, value]) => {
+      const camelKey = key.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+      acc[camelKey] = toCamelCase(value);
+      return acc;
+    }, {});
+  }
+  return obj;
+}
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`/api${endpoint}`, {
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
@@ -44,7 +58,8 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   if (!res.ok) {
     throw new Error(`Request failed: ${res.status}`);
   }
-  return res.json();
+  const data = await res.json();
+  return toCamelCase(data) as T;
 }
 
 export const localDbOperations = {
