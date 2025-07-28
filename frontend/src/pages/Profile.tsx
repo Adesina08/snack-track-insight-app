@@ -444,7 +444,6 @@ const Profile = () => {
                       }
                     />
                   </div>
-
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-gray-800">

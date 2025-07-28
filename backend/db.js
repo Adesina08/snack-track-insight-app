@@ -7,7 +7,7 @@ dotenv.config();
 
 const connectionString =
   process.env.DATABASE_URL ||
-  'postgres://snackuser:snackpass@localhost:5432/snacktrack';
+  'postgresql://snackstrack_user:Cjf3cvlisS0xzSIuQJlhJiwwFNk3sV6p@dpg-d23l1qe3jp1c73a1l160-a.oregon-postgres.render.com/snackstrack';
 
 export const pool = new Pool({ connectionString });
 
