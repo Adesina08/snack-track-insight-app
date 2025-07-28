@@ -11,21 +11,22 @@ pip install -r requirements.txt
 npm start
 ```
 
-The server listens on `PORT` (defaults to `4000`) and uses the `DATABASE_URL` environment variable to connect to PostgreSQL. It also exposes a health endpoint at `/api/health` that returns `{ status: 'ok' }`.
+The server listens on `PORT` (defaults to `4000`) and uses the `DB_*` environment variables to connect to PostgreSQL. It also exposes a health endpoint at `/api/health` that returns `{ status: 'ok' }`.
 
 ### Environment variables
 
 Copy the `.env.example` file from the repository root to `.env` in this directory and define at least the following variables:
 
 ```env
-DATABASE_URL=postgres://snackuser:snackpass@localhost:5432/snacktrack
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=snackuser
+DB_PASSWORD=snackpass
+DB_NAME=snacktrack
 PORT=4000
 ```
 
 These values are loaded automatically at runtime using `dotenv`.
-When connecting to a hosted database (e.g. Render or Heroku), make sure your
-`DATABASE_URL` includes SSL settings or set the `ssl` options in `db.js`. The
-server automatically enables TLS for any connection string that does not point
-to `localhost`.
+When connecting to a hosted database (e.g. Render or Heroku), provide the host, port, username and password from your provider. TLS is automatically enabled for any host that is not `localhost`.
 
 Future API routes should be added to `server.js`.

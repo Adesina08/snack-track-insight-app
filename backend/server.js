@@ -4,10 +4,12 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import crypto from 'node:crypto';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { pool, initDb } from './db.js';
 
-dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -19,7 +21,7 @@ try {
   await initDb();
 } catch (err) {
   console.error(
-    'Failed to connect to the database. Ensure PostgreSQL is running and DATABASE_URL is correct.',
+    'Failed to connect to the database. Ensure PostgreSQL is running and DB_* variables are correct.',
   );
   console.error(err);
   process.exit(1);
