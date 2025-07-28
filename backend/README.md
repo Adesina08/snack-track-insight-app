@@ -8,6 +8,9 @@ This directory contains a minimal Express server used by the Snack Track Insight
 cd backend
 npm install
 pip install -r requirements.txt
+# Ensure the `ffmpeg` binary is available for processing audio and video inputs
+# The `requirements.txt` file installs `openai-whisper` for transcription. On Windows,
+# the provided script patches the library so it can locate the correct C runtime.
 npm start
 ```
 
