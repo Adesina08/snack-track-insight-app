@@ -37,6 +37,7 @@ const LogConsumption = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordingType, setRecordingType] = useState<'audio' | 'video'>('audio');
+  const [captureMethod, setCaptureMethod] = useState<'manual' | 'ai'>('ai');
   const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
 
   const categories = ["Jollof Rice", "Suya", "Pounded Yam", "Egusi", "Pepper Soup", "Chin Chin", "Plantain", "Akara", "Moi Moi", "Other"];
@@ -45,6 +46,13 @@ const LogConsumption = () => {
   useEffect(() => {
     getCurrentLocation();
   }, []);
+
+  useEffect(() => {
+    if (captureMethod === 'manual') {
+      setSelectedFile(null);
+      setAiAnalysis(null);
+    }
+  }, [captureMethod]);
 
   const getCurrentLocation = async () => {
     try {
@@ -183,9 +191,9 @@ const LogConsumption = () => {
       }
 
       let mediaUrl = '';
-      
+
       // Compress and upload locally if a file was recorded
-      if (selectedFile) {
+      if (captureMethod === 'ai' && selectedFile) {
         let fileToUpload = selectedFile;
           
           // Compress media before upload
@@ -207,8 +215,8 @@ const LogConsumption = () => {
       }
 
       // Calculate points based on submission
-      let points = 15; // Base points for AI capture
-      if (selectedFile) {
+      let points = captureMethod === 'ai' ? 15 : 10; // Base points
+      if (captureMethod === 'ai' && selectedFile) {
         points += recordingType === 'video' ? 25 : 20; // Video bonus
       }
       if (formData.notes.length > 50) points += 10; // Detailed description bonus
@@ -224,9 +232,9 @@ const LogConsumption = () => {
         location: currentLocation ? LocationService.formatLocation(currentLocation) : formData.location,
         notes: formData.notes,
         mediaUrl,
-        mediaType: selectedFile?.type.startsWith('video/') ? 'video' as const : 'audio' as const,
-        captureMethod: 'ai' as const,
-        aiAnalysis,
+        mediaType: captureMethod === 'ai' && selectedFile ? (selectedFile.type.startsWith('video/') ? 'video' as const : 'audio' as const) : undefined,
+        captureMethod,
+        aiAnalysis: captureMethod === 'ai' ? aiAnalysis : undefined,
         points
       };
 
@@ -263,7 +271,27 @@ const LogConsumption = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="flex justify-center space-x-4">
+              <Button
+                type="button"
+                variant={captureMethod === 'manual' ? 'default' : 'outline'}
+                onClick={() => setCaptureMethod('manual')}
+                className={captureMethod === 'manual' ? 'gradient-primary text-white' : ''}
+              >
+                Manual Entry
+              </Button>
+              <Button
+                type="button"
+                variant={captureMethod === 'ai' ? 'default' : 'outline'}
+                onClick={() => setCaptureMethod('ai')}
+                className={captureMethod === 'ai' ? 'gradient-primary text-white' : ''}
+              >
+                AI Capture
+              </Button>
+            </div>
+
             {/* AI Media Capture Section */}
+            {captureMethod === 'ai' && (
             <Card className="glass-card hover-glow">
               <CardHeader>
                 <CardTitle className="flex items-center text-gradient">
@@ -431,8 +459,10 @@ const LogConsumption = () => {
                 )}
               </CardContent>
             </Card>
+            )}
 
             {/* Manual Entry Section */}
+            {captureMethod === 'manual' && (
             <Card className="glass-card hover-glow">
               <CardHeader>
                 <CardTitle className="flex items-center text-gradient">
@@ -513,8 +543,26 @@ const LogConsumption = () => {
                     className="glass-effect"
                   />
                 </div>
+                <Button
+                  type="submit"
+                  className="w-full gradient-primary hover-glow text-white shadow-lg"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Log My Naija Meal
+                    </>
+                  )}
+                </Button>
               </CardContent>
             </Card>
+            )}
           </form>
         </div>
       </div>

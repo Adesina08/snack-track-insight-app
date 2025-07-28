@@ -50,7 +50,8 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
 
   try {
     const scriptPath = path.join(process.cwd(), 'transcribe.py');
-    const python = spawn('python3', [scriptPath, req.file.path]);
+    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+    const python = spawn(pythonCmd, [scriptPath, req.file.path]);
     let output = '';
     python.stdout.on('data', (data) => {
       output += data.toString();
