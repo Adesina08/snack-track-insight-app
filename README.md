@@ -28,7 +28,7 @@ The Vite server proxies requests from `/api` to the backend running on port `400
 Ensure `npm start` is running inside `backend` so API requests succeed during development.
 ```
 
-To run the **backend** API server (requires Python and the `whisper` package):
+To run the **backend** API server (requires Python and the `whisper` package; `ffmpeg` must be installed):
 
 ```sh
 cd backend

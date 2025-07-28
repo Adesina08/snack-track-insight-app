@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import ThemeToggle from "@/components/ThemeToggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Home, Plus, Gift, User, BarChart3, Menu, LogOut } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -87,7 +86,6 @@ const Navigation = () => {
                   <span>{item.label}</span>
                 </Link>
               ))}
-              <ThemeToggle />
               <Button variant="ghost" onClick={handleLogout} className="text-blue-600 hover:text-red-600 hover-glow">
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
@@ -126,9 +124,6 @@ const Navigation = () => {
                     {navItems.map((item) => (
                       <NavLink key={item.path} item={item} onClick={() => setIsOpen(false)} />
                     ))}
-                    <div className="pt-2">
-                      <ThemeToggle />
-                    </div>
                   </nav>
 
                   <div className="mt-8 pt-6 border-t border-blue-200">
