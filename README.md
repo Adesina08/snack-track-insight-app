@@ -28,19 +28,19 @@ The Vite server proxies requests from `/api` to the backend running on port `400
 Ensure `npm start` is running inside `backend` so API requests succeed during development.
 ```
 
-
 To run the **backend** API server (requires Python and the `openai-whisper` package; `ffmpeg` must be installed):
-
 
 ```sh
 cd backend
 npm install
-pip install -r requirements.txt
+# Creates a `.venv` folder and installs Python packages inside it
+python setup_env.py
 npm start
 ```
 
 On Windows the startup script automatically patches the Whisper dependency so it
-loads the correct C runtime (`msvcrt.dll`).
+loads the correct C runtime (`msvcrt.dll`). If a `.venv` directory is present,
+the backend automatically uses its Python interpreter when processing uploads.
 
 The server automatically creates an `uploads` folder for media files if it does not exist.
 
@@ -91,3 +91,7 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+
+### Logging meals
+
+On the log consumption page you can switch between **Manual Entry** and **AI Capture**. Manual entry only shows the meal form, while AI Capture also records audio or video which is transcribed using Whisper.

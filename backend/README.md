@@ -7,14 +7,15 @@ This directory contains a minimal Express server used by the Snack Track Insight
 ```sh
 cd backend
 npm install
-pip install -r requirements.txt
-# Ensure the `ffmpeg` binary is available for processing audio and video inputs
-
-# The `requirements.txt` file installs `openai-whisper` for transcription. On Windows,
-# the provided script patches the library so it can locate the correct C runtime.
+# Create a virtual environment in `.venv` and install the Python dependencies
+python setup_env.py
+# Ensure the `ffmpeg` binary is available for processing audio and video inputs.
+# On Windows the setup script patches Whisper so it can locate the correct C runtime.
 
 npm start
 ```
+
+If a `.venv` directory exists, the server uses its Python interpreter when spawning the transcription script.
 
 The server listens on `PORT` (defaults to `4000`) and uses the `DB_*` environment variables to connect to PostgreSQL. It also exposes a health endpoint at `/api/health` that returns `{ status: 'ok' }`.
 During development the frontend's Vite server proxies `/api` requests to this port, so make sure it is running before interacting with the app.

@@ -50,7 +50,14 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
 
   try {
     const scriptPath = path.join(process.cwd(), 'transcribe.py');
-    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+    let pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+    const venvPython =
+      process.platform === 'win32'
+        ? path.join(__dirname, '.venv', 'Scripts', 'python.exe')
+        : path.join(__dirname, '.venv', 'bin', 'python');
+    if (fs.existsSync(venvPython)) {
+      pythonCmd = venvPython;
+    }
     const python = spawn(pythonCmd, [scriptPath, req.file.path]);
     let output = '';
     python.stdout.on('data', (data) => {
