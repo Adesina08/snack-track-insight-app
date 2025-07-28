@@ -1,8 +1,22 @@
 import sys
 import os
 import tempfile
+import platform
+import ctypes.util
 import whisper
 import ffmpeg
+
+if platform.system() == "Windows":
+    original_find = ctypes.util.find_library
+
+    def _patched_find_library(name: str):
+        if name == "c":
+            return "msvcrt.dll"
+        return original_find(name)
+
+    ctypes.util.find_library = _patched_find_library
+
+
 
 
 def prepare_audio(path: str) -> str:
