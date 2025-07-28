@@ -3,6 +3,8 @@ import os
 import tempfile
 import platform
 import ctypes.util
+import whisper
+import ffmpeg
 
 if platform.system() == "Windows":
     original_find = ctypes.util.find_library
@@ -14,8 +16,7 @@ if platform.system() == "Windows":
 
     ctypes.util.find_library = _patched_find_library
 
-import whisper
-import ffmpeg
+
 
 
 def prepare_audio(path: str) -> str:
