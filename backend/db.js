@@ -9,7 +9,11 @@ const connectionString =
   process.env.DATABASE_URL ||
   'postgres://snackuser:snackpass@localhost:5432/snacktrack';
 
-export const pool = new Pool({ connectionString });
+const isLocal = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
+export const pool = new Pool({
+  connectionString,
+  ssl: isLocal ? false : { rejectUnauthorized: false },
+});
 
 export async function initDb() {
   await pool.query(`

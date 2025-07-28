@@ -38,13 +38,13 @@ The server automatically creates an `uploads` folder for media files if it does 
 
 ### Environment Variables
 
-Create a `.env` file in the project root (or use your hosting provider's configuration) and define the following variables:
+Copy `.env.example` to `.env` in the project root (or use your hosting provider's configuration) and define the following variables:
 
 VITE_JWT_SECRET=<your secret key>
 DATABASE_URL=postgres://snackuser:snackpass@localhost:5432/snacktrack
 ```
 
-The app requires `VITE_JWT_SECRET` for authentication tokens. `DATABASE_URL` points to your local PostgreSQL instance used by the backend. Media files are stored locally in the `backend/uploads` directory.
+The app requires `VITE_JWT_SECRET` for authentication tokens. `DATABASE_URL` points to your PostgreSQL instance used by the backend. When deploying on services like Render, use the connection string provided by the platform (usually ending with `?sslmode=require`). Media files are stored locally in the `backend/uploads` directory.
 
 ### Local database
 

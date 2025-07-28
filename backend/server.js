@@ -15,7 +15,15 @@ const uploadsDir = path.join(process.cwd(), 'uploads');
 fs.mkdirSync(uploadsDir, { recursive: true });
 const upload = multer({ dest: uploadsDir });
 
-await initDb();
+try {
+  await initDb();
+} catch (err) {
+  console.error(
+    'Failed to connect to the database. Ensure PostgreSQL is running and DATABASE_URL is correct.',
+  );
+  console.error(err);
+  process.exit(1);
+}
 
 app.use(express.json());
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
