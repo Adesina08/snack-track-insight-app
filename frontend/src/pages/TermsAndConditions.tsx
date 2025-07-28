@@ -9,7 +9,7 @@ const TermsAndConditions = () => {
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="mb-6">
           <Link to="/register">
-            <Button variant="ghost" className="text-primary hover:text-primary/80 hover-glow">
+            <Button variant="ghost" className="text-blue-600 hover:text-blue-700 hover-glow">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Registration
             </Button>
@@ -27,14 +27,14 @@ const TermsAndConditions = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             <section>
-              <h2 className="text-xl font-semibold text-primary mb-3">1. Introduction</h2>
+              <h2 className="text-xl font-semibold text-blue-700 mb-3">1. Introduction</h2>
               <p className="text-gray-700 leading-relaxed">
                 Welcome to NaijaSnackTrack ("we," "our," or "us"). These Terms and Conditions ("Terms") govern your use of our food consumption tracking application and related services. By accessing or using our app, you agree to be bound by these Terms.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-primary mb-3">2. User Accounts</h2>
+              <h2 className="text-xl font-semibold text-blue-700 mb-3">2. User Accounts</h2>
               <p className="text-gray-700 leading-relaxed mb-2">
                 To use our services, you must create an account and provide accurate, complete information. You are responsible for:
               </p>
@@ -47,7 +47,7 @@ const TermsAndConditions = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-primary mb-3">3. Data Collection and Privacy</h2>
+              <h2 className="text-xl font-semibold text-blue-700 mb-3">3. Data Collection and Privacy</h2>
               <p className="text-gray-700 leading-relaxed mb-2">
                 We collect and process the following types of data:
               </p>
@@ -64,14 +64,14 @@ const TermsAndConditions = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-primary mb-3">4. AI-Powered Features</h2>
+              <h2 className="text-xl font-semibold text-blue-700 mb-3">4. AI-Powered Features</h2>
               <p className="text-gray-700 leading-relaxed">
                 Our app uses artificial intelligence to analyze your food consumption patterns and media uploads. AI analysis results are automated and may not always be 100% accurate. Users should review and verify AI-generated insights before relying on them for dietary decisions.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-primary mb-3">5. Points and Rewards System</h2>
+              <h2 className="text-xl font-semibold text-blue-700 mb-3">5. Points and Rewards System</h2>
               <p className="text-gray-700 leading-relaxed mb-2">
                 Our app includes a points-based reward system where users earn points for logging consumption data. Please note:
               </p>
@@ -84,14 +84,14 @@ const TermsAndConditions = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-primary mb-3">6. Media Content</h2>
+              <h2 className="text-xl font-semibold text-blue-700 mb-3">6. Media Content</h2>
               <p className="text-gray-700 leading-relaxed">
                 When you upload photos, audio, or video content to our app, you grant us a license to process, store, and analyze this content for service provision. You retain ownership of your content, but you must ensure you have the right to upload and share any content you submit.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-primary mb-3">7. Prohibited Conduct</h2>
+              <h2 className="text-xl font-semibold text-blue-700 mb-3">7. Prohibited Conduct</h2>
               <p className="text-gray-700 leading-relaxed mb-2">
                 You agree not to:
               </p>
@@ -105,35 +105,35 @@ const TermsAndConditions = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-primary mb-3">8. Disclaimer of Warranties</h2>
+              <h2 className="text-xl font-semibold text-blue-700 mb-3">8. Disclaimer of Warranties</h2>
               <p className="text-gray-700 leading-relaxed">
                 Our app is provided "as is" without warranties of any kind. We do not guarantee that the app will be error-free, uninterrupted, or meet your specific requirements. Any dietary or health insights provided by the app should not replace professional medical advice.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-primary mb-3">9. Limitation of Liability</h2>
+              <h2 className="text-xl font-semibold text-blue-700 mb-3">9. Limitation of Liability</h2>
               <p className="text-gray-700 leading-relaxed">
                 To the maximum extent permitted by law, we shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the app, including but not limited to loss of data, business interruption, or personal injury.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-primary mb-3">10. Termination</h2>
+              <h2 className="text-xl font-semibold text-blue-700 mb-3">10. Termination</h2>
               <p className="text-gray-700 leading-relaxed">
                 We may terminate or suspend your account at any time for violations of these Terms. Upon termination, your right to use the app ceases immediately, and we may delete your account data in accordance with our data retention policies.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-primary mb-3">11. Changes to Terms</h2>
+              <h2 className="text-xl font-semibold text-blue-700 mb-3">11. Changes to Terms</h2>
               <p className="text-gray-700 leading-relaxed">
                 We reserve the right to modify these Terms at any time. We will notify users of significant changes through the app or via email. Continued use of the app after changes constitutes acceptance of the new Terms.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-primary mb-3">12. Contact Information</h2>
+              <h2 className="text-xl font-semibold text-blue-700 mb-3">12. Contact Information</h2>
               <p className="text-gray-700 leading-relaxed">
                 If you have questions about these Terms, please contact us at:
               </p>
@@ -144,7 +144,7 @@ const TermsAndConditions = () => {
               </div>
             </section>
 
-            <section className="pt-4 border-t border-border">
+            <section className="pt-4 border-t border-blue-200">
               <p className="text-sm text-muted-foreground text-center">
                 Last updated: {new Date().toLocaleDateString()}
               </p>

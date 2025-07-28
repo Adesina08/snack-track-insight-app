@@ -139,7 +139,7 @@ const Register = () => {
           <div className="mb-6">
             <Link
               to="/"
-              className="flex items-center text-primary hover:text-primary/80 transition-colors hover-glow"
+              className="flex items-center text-blue-600 hover:text-blue-700 transition-colors hover-glow"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
@@ -171,7 +171,7 @@ const Register = () => {
                         setFormData({ ...formData, firstName: e.target.value })
                       }
                       required
-                      className="border-border focus:border-primary glass-effect"
+                      className="border-blue-200 focus:border-blue-400 glass-effect"
                     />
                   </div>
                   <div>
@@ -185,7 +185,7 @@ const Register = () => {
                         setFormData({ ...formData, lastName: e.target.value })
                       }
                       required
-                      className="border-border focus:border-primary glass-effect"
+                      className="border-blue-200 focus:border-blue-400 glass-effect"
                     />
                   </div>
                 </div>
@@ -202,7 +202,7 @@ const Register = () => {
                       setFormData({ ...formData, email: e.target.value })
                     }
                     required
-                    className="border-border focus:border-primary glass-effect"
+                    className="border-blue-200 focus:border-blue-400 glass-effect"
                   />
                 </div>
 
@@ -218,7 +218,7 @@ const Register = () => {
                       setFormData({ ...formData, phone: e.target.value })
                     }
                     required
-                    className="border-border focus:border-primary glass-effect"
+                    className="border-blue-200 focus:border-blue-400 glass-effect"
                   />
                 </div>
 
@@ -234,7 +234,7 @@ const Register = () => {
                         setFormData({ ...formData, password: e.target.value })
                       }
                       required
-                      className="border-border focus:border-primary glass-effect"
+                      className="border-blue-200 focus:border-blue-400 glass-effect"
                     />
                   </div>
                 </div>
@@ -254,7 +254,7 @@ const Register = () => {
                         })
                       }
                       required
-                      className="border-border focus:border-primary glass-effect"
+                      className="border-blue-200 focus:border-blue-400 glass-effect"
                     />
                   </div>
                 </div>
@@ -275,7 +275,7 @@ const Register = () => {
                       I agree to the{" "}
                       <Link
                         to="/terms"
-                        className="text-primary hover:underline"
+                        className="text-blue-600 hover:underline"
                       >
                         Terms and Conditions
                       </Link>
@@ -313,7 +313,7 @@ const Register = () => {
                   Already have an account?{" "}
                   <Link
                     to="/login"
-                    className="text-primary hover:underline font-semibold"
+                    className="text-blue-600 hover:underline font-semibold"
                   >
                     Sign in here
                   </Link>
