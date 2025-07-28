@@ -113,7 +113,6 @@ const Login = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-
                   <Label htmlFor="email" className="text-gray-800">
                     Email
                   </Label>

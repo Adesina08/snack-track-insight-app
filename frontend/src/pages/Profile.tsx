@@ -444,10 +444,8 @@ const Profile = () => {
                       }
                     />
                   </div>
-
                   <div className="flex items-center justify-between">
                     <div>
-
                       <p className="font-medium text-gray-800">
                         Weekly Reports
                       </p>
@@ -526,7 +524,6 @@ const Profile = () => {
                         >
                           <div>
                             <p className="font-medium text-gray-800">
-
                               {activity.action}
                             </p>
                             <p className="text-sm text-muted-foreground">
