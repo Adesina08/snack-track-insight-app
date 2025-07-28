@@ -23,6 +23,9 @@ npm install
 
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
+
+The Vite server proxies requests from `/api` to the backend running on port `4000`.
+Ensure `npm start` is running inside `backend` so API requests succeed during development.
 ```
 
 To run the **backend** API server (requires Python and the `whisper` package):
@@ -41,14 +44,18 @@ The server automatically creates an `uploads` folder for media files if it does 
 Copy `.env.example` to `.env` in the project root (or use your hosting provider's configuration) and define the following variables:
 
 VITE_JWT_SECRET=<your secret key>
-DATABASE_URL=postgres://snackuser:snackpass@localhost:5432/snacktrack
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=snackuser
+DB_PASSWORD=snackpass
+DB_NAME=snacktrack
 ```
 
-The app requires `VITE_JWT_SECRET` for authentication tokens. `DATABASE_URL` points to your PostgreSQL instance used by the backend. When deploying on services like Render, use the connection string provided by the platform (usually ending with `?sslmode=require`). Media files are stored locally in the `backend/uploads` directory.
+The app requires `VITE_JWT_SECRET` for authentication tokens. The `DB_*` variables define the PostgreSQL connection used by the backend. When deploying on services like Render, use the host, port, username and password provided by the platform. SSL is automatically enabled for any host that is not `localhost`. Media files are stored locally in the `backend/uploads` directory.
 
 ### Local database
 
-Data is persisted in PostgreSQL. The backend will automatically create the necessary tables and seed a few rewards on first run. Ensure a local PostgreSQL server is running and `DATABASE_URL` is set appropriately.
+Data is persisted in PostgreSQL. The backend will automatically create the necessary tables and seed a few rewards on first run. Ensure a local PostgreSQL server is running and the `DB_*` variables are set appropriately.
 
 
 docker run --name snacktrack-postgres -e POSTGRES_USER=snackuser \
@@ -78,4 +85,8 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+
+### Themes
+
+The interface supports light and dark modes. Use the sun/moon button in the navigation bar to toggle themes. All components use CSS variables so text, backgrounds and borders adjust automatically when the theme changes.
 
