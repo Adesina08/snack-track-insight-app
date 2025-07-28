@@ -52,7 +52,7 @@ const Navigation = () => {
         className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 hover-glow ${
           isActive
             ? "gradient-primary text-white shadow-md"
-            : "text-primary hover:bg-secondary/50 glass-effect"
+            : "text-blue-600 hover:bg-blue-50 glass-effect"
         }`}
       >
         <item.icon className="h-5 w-5" />
@@ -64,7 +64,7 @@ const Navigation = () => {
   return (
     <>
       {/* Desktop Navigation */}
-      <header className="hidden lg:block glass-card border-b border-border/50 sticky top-0 z-50">
+      <header className="hidden lg:block glass-card border-b border-blue-200/50 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link to="/dashboard" className="flex items-center space-x-2 hover-glow">
@@ -80,7 +80,7 @@ const Navigation = () => {
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors hover-glow ${
                     location.pathname === item.path
                       ? "gradient-primary text-white shadow-lg"
-                      : "text-primary hover:text-primary/80 hover:bg-secondary/50 glass-effect"
+                      : "text-blue-600 hover:text-blue-700 hover:bg-blue-50 glass-effect"
                   }`}
                 >
                   <item.icon className="h-4 w-4" />
@@ -88,7 +88,7 @@ const Navigation = () => {
                 </Link>
               ))}
               <ThemeToggle />
-              <Button variant="ghost" onClick={handleLogout} className="text-primary hover:text-red-600 hover-glow">
+              <Button variant="ghost" onClick={handleLogout} className="text-blue-600 hover:text-red-600 hover-glow">
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
@@ -98,7 +98,7 @@ const Navigation = () => {
       </header>
 
       {/* Mobile Navigation */}
-      <header className="lg:hidden glass-card border-b border-border/50 sticky top-0 z-50">
+      <header className="lg:hidden glass-card border-b border-blue-200/50 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link to="/dashboard" className="flex items-center space-x-2 hover-glow">
@@ -108,7 +108,7 @@ const Navigation = () => {
 
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-primary">
+                <Button variant="ghost" size="icon" className="text-blue-600">
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
@@ -131,14 +131,14 @@ const Navigation = () => {
                     </div>
                   </nav>
 
-                  <div className="mt-8 pt-6 border-t border-border">
+                  <div className="mt-8 pt-6 border-t border-blue-200">
                     <Button
                       variant="ghost"
                       onClick={() => {
                         handleLogout();
                         setIsOpen(false);
                       }}
-                      className="w-full justify-start text-primary hover:text-red-600 hover:bg-red-50 hover-glow"
+                      className="w-full justify-start text-blue-600 hover:text-red-600 hover:bg-red-50 hover-glow"
                     >
                       <LogOut className="h-4 w-4 mr-3" />
                       Logout
@@ -152,7 +152,7 @@ const Navigation = () => {
       </header>
 
       {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 glass-card border-t border-border/50 z-50">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 glass-card border-t border-blue-200/50 z-50">
         <div className="grid grid-cols-5 gap-1 px-2 py-2">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -162,8 +162,8 @@ const Navigation = () => {
                 to={item.path}
                 className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg transition-colors hover-glow ${
                   isActive
-                    ? "text-primary bg-secondary"
-                    : "text-gray-500 hover:text-primary"
+                    ? "text-blue-600 bg-blue-50"
+                    : "text-gray-500 hover:text-blue-600"
                 }`}
               >
                 <item.icon className="h-5 w-5 mb-1" />

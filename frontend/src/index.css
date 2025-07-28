@@ -108,11 +108,11 @@
 /* Blue-themed utilities */
 @layer utilities {
   .glass-effect {
-    @apply bg-background/80 backdrop-blur-xl border border-border/50 shadow-xl;
+    @apply bg-blue-50/80 backdrop-blur-xl border border-blue-200/50 shadow-xl;
   }
   
   .glass-card {
-    @apply bg-background/90 backdrop-blur-md border border-border/60 shadow-xl;
+    @apply bg-blue-50/90 backdrop-blur-md border border-blue-200/60 shadow-xl;
   }
   
   .gradient-primary {
@@ -132,11 +132,11 @@
   }
   
   .text-gradient {
-    @apply bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent;
   }
   
   .hover-glow {
-    @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/25;
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25;
   }
   
   .animated-gradient {

@@ -68,9 +68,9 @@ const AzureStorageSetup = ({ onConfigured }: AzureStorageSetupProps) => {
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="bg-secondary border border-border rounded-lg p-4">
-          <h4 className="font-semibold text-primary mb-2">Setup Instructions:</h4>
-          <ol className="list-decimal list-inside space-y-1 text-sm text-primary">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="font-semibold text-blue-800 mb-2">Setup Instructions:</h4>
+          <ol className="list-decimal list-inside space-y-1 text-sm text-blue-700">
             <li>Create an Azure Storage Account</li>
             <li>Create a container named "naijasnack-media" (or your preferred name)</li>
             <li>Generate a SAS token with read/write permissions</li>
@@ -79,7 +79,7 @@ const AzureStorageSetup = ({ onConfigured }: AzureStorageSetupProps) => {
           <Button
             variant="outline"
             size="sm"
-            className="mt-3 border-border text-primary"
+            className="mt-3 border-blue-300 text-blue-600"
             onClick={() => window.open('https://portal.azure.com/#create/Microsoft.StorageAccount', '_blank')}
           >
             <ExternalLink className="h-4 w-4 mr-2" />
@@ -95,7 +95,7 @@ const AzureStorageSetup = ({ onConfigured }: AzureStorageSetupProps) => {
               value={config.accountName}
               onChange={(e) => setConfig({ ...config, accountName: e.target.value })}
               placeholder="mystorageaccount"
-              className="border-border focus:border-primary glass-effect"
+              className="border-blue-200 focus:border-blue-400 glass-effect"
             />
             <p className="text-xs text-gray-500 mt-1">
               The name of your Azure Storage Account (without .blob.core.windows.net)
@@ -109,7 +109,7 @@ const AzureStorageSetup = ({ onConfigured }: AzureStorageSetupProps) => {
               value={config.containerName}
               onChange={(e) => setConfig({ ...config, containerName: e.target.value })}
               placeholder="naijasnack-media"
-              className="border-border focus:border-primary glass-effect"
+              className="border-blue-200 focus:border-blue-400 glass-effect"
             />
             <p className="text-xs text-gray-500 mt-1">
               The container where your media files will be stored
@@ -124,7 +124,7 @@ const AzureStorageSetup = ({ onConfigured }: AzureStorageSetupProps) => {
               value={config.sasToken}
               onChange={(e) => setConfig({ ...config, sasToken: e.target.value })}
               placeholder="?sv=2022-11-02&ss=b&srt=sco&sp=rwdlac&se=..."
-              className="border-border focus:border-primary glass-effect"
+              className="border-blue-200 focus:border-blue-400 glass-effect"
             />
             <p className="text-xs text-gray-500 mt-1">
               SAS token with read/write permissions (should start with "?")

@@ -388,7 +388,7 @@ const Rewards = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center text-primary font-bold">
+                          <div className="flex items-center text-blue-600 font-bold">
                             <Star className="h-4 w-4 mr-1" />
                             {rewardCost} pts
                           </div>
@@ -447,8 +447,8 @@ const Rewards = () => {
                         key={entry.id}
                         className={`flex items-center justify-between p-4 rounded-lg ${
                           isUserEntry
-                            ? "gradient-accent border-2 border-border"
-                            : "bg-secondary"
+                            ? "gradient-accent border-2 border-blue-300"
+                            : "bg-blue-50"
                         }`}
                       >
                         <div className="flex items-center space-x-4">
@@ -460,14 +460,14 @@ const Rewards = () => {
                                   ? "bg-gray-400 text-white"
                                   : rank === 3
                                     ? "bg-orange-500 text-white"
-                                    : "bg-secondary text-primary"
+                                    : "bg-blue-200 text-blue-700"
                             }`}
                           >
                             {medal}
                           </div>
                           <div>
                             <p
-                              className={`font-semibold ${isUserEntry ? "text-primary" : "text-foreground"}`}
+                              className={`font-semibold ${isUserEntry ? "text-blue-700" : "text-gray-800"}`}
                             >
                               {entry.name}
                               {isUserEntry && " (You)"}
@@ -479,7 +479,7 @@ const Rewards = () => {
                         </div>
                         <div className="text-right">
                           <p
-                            className={`font-bold ${isUserEntry ? "text-primary" : "text-foreground"}`}
+                            className={`font-bold ${isUserEntry ? "text-blue-600" : "text-gray-800"}`}
                           >
                             {entry.points.toLocaleString()} pts
                           </p>
@@ -525,7 +525,7 @@ const Rewards = () => {
                           <div className="space-y-2">
                             <div className="flex justify-between text-sm">
                               <span className="text-gray-600">Progress</span>
-                              <span className="text-primary font-medium">
+                              <span className="text-blue-600 font-medium">
                                 {achievement.progress}%
                               </span>
                             </div>

@@ -86,7 +86,3 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
-### Themes
-
-The interface supports light and dark modes. Use the sun/moon button in the navigation bar to toggle themes. All components use CSS variables so text, backgrounds and borders adjust automatically when the theme changes.
-
