@@ -5,13 +5,16 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const connectionString =
-  process.env.DATABASE_URL ||
-  'postgresql://snackstrack_user:Cjf3cvlisS0xzSIuQJlhJiwwFNk3sV6p@dpg-d23l1qe3jp1c73a1l160-a.oregon-postgres.render.com/snackstrack';
+const isLocal =
+  process.env.DB_HOST?.includes('localhost') ||
+  process.env.DB_HOST?.includes('127.0.0.1');
 
-const isLocal = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
 export const pool = new Pool({
-  connectionString,
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT || 5432),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   ssl: isLocal ? false : { rejectUnauthorized: false },
 });
 

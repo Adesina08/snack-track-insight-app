@@ -19,7 +19,7 @@ try {
   await initDb();
 } catch (err) {
   console.error(
-    'Failed to connect to the database. Ensure PostgreSQL is running and DATABASE_URL is correct.',
+    'Failed to connect to the database. Ensure PostgreSQL is running and DB_* variables are correct.',
   );
   console.error(err);
   process.exit(1);
