@@ -97,7 +97,9 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
     if (fs.existsSync(venvPython)) {
       pythonCmd = venvPython;
     }
-    const python = spawn(pythonCmd, [scriptPath, req.file.path]);
+    const python = spawn(pythonCmd, [scriptPath, req.file.path], {
+      env: { ...process.env, PYTHONIOENCODING: 'utf-8' },
+    });
     let output = '';
     python.stdout.on('data', (data) => {
       output += data.toString();
