@@ -266,8 +266,7 @@ const AdminDashboard = () => {
                   <ActivityCalendar
                     data={activityData}
                     theme={{
-                      light: ['#f0f9ff', '#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8'],
-                      dark: ['#1e293b', '#334155', '#475569', '#64748b', '#94a3b8']
+                      light: ['#f0f9ff', '#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8']
                     }}
                     fontSize={12}
                     blockSize={12}
