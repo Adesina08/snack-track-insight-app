@@ -11,6 +11,7 @@ npm install
 python setup_env.py
 # Ensure the `ffmpeg` binary is available for processing audio and video inputs.
 # On Windows the setup script patches Whisper so it can locate the correct C runtime.
+
 npm start
 ```
 
