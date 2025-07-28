@@ -23,5 +23,9 @@ PORT=4000
 ```
 
 These values are loaded automatically at runtime using `dotenv`.
+When connecting to a hosted database (e.g. Render or Heroku), make sure your
+`DATABASE_URL` includes SSL settings or set the `ssl` options in `db.js`. The
+server automatically enables TLS for any connection string that does not point
+to `localhost`.
 
 Future API routes should be added to `server.js`.
