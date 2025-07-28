@@ -261,7 +261,7 @@ const Profile = () => {
                       <Camera className="h-4 w-4" />
                     </button>
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-1">
+                  <h3 className="text-xl font-bold text-gray-800 mb-1">
                     {user?.firstName} {user?.lastName}
                   </h3>
                   <p className="text-muted-foreground mb-4">{user?.email}</p>
@@ -313,7 +313,7 @@ const Profile = () => {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="firstName" className="text-foreground">
+                      <Label htmlFor="firstName" className="text-gray-800">
                         First Name
                       </Label>
                       <Input
@@ -329,7 +329,7 @@ const Profile = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="lastName" className="text-foreground">
+                      <Label htmlFor="lastName" className="text-gray-800">
                         Last Name
                       </Label>
                       <Input
@@ -344,7 +344,7 @@ const Profile = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="email" className="text-foreground">
+                    <Label htmlFor="email" className="text-gray-800">
                       Email
                     </Label>
                     <div className="relative">
@@ -360,7 +360,7 @@ const Profile = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="phone" className="text-foreground">
+                    <Label htmlFor="phone" className="text-gray-800">
                       Phone Number
                     </Label>
                     <div className="relative">
@@ -378,7 +378,7 @@ const Profile = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="location" className="text-foreground">
+                    <Label htmlFor="location" className="text-gray-800">
                       Location in Nigeria
                     </Label>
                     <div className="relative">
@@ -413,7 +413,7 @@ const Profile = () => {
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-foreground">
+                      <p className="font-medium text-gray-800">
                         Enable Notifications
                       </p>
                       <p className="text-sm text-muted-foreground">
@@ -430,7 +430,7 @@ const Profile = () => {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-foreground">
+                      <p className="font-medium text-gray-800">
                         Daily Reminders
                       </p>
                       <p className="text-sm text-muted-foreground">
@@ -447,7 +447,8 @@ const Profile = () => {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-foreground">
+
+                      <p className="font-medium text-gray-800">
                         Weekly Reports
                       </p>
                       <p className="text-sm text-muted-foreground">
@@ -464,7 +465,7 @@ const Profile = () => {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-foreground">
+                      <p className="font-medium text-gray-800">
                         Achievement Alerts
                       </p>
                       <p className="text-sm text-muted-foreground">
@@ -481,7 +482,7 @@ const Profile = () => {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-foreground">
+                      <p className="font-medium text-gray-800">
                         Marketing Emails
                       </p>
                       <p className="text-sm text-muted-foreground">
@@ -524,7 +525,8 @@ const Profile = () => {
                           className="flex items-center justify-between p-3 glass-effect rounded-lg"
                         >
                           <div>
-                            <p className="font-medium text-foreground">
+                            <p className="font-medium text-gray-800">
+
                               {activity.action}
                             </p>
                             <p className="text-sm text-muted-foreground">

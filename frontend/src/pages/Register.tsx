@@ -161,7 +161,7 @@ const Register = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="firstName" className="text-foreground">
+                    <Label htmlFor="firstName" className="text-gray-800">
                       First Name
                     </Label>
                     <Input
@@ -175,7 +175,7 @@ const Register = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="lastName" className="text-foreground">
+                    <Label htmlFor="lastName" className="text-gray-800">
                       Last Name
                     </Label>
                     <Input
@@ -191,7 +191,7 @@ const Register = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="email" className="text-foreground">
+                  <Label htmlFor="email" className="text-gray-800">
                     Email
                   </Label>
                   <Input
@@ -207,7 +207,7 @@ const Register = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="phone" className="text-foreground">
+                  <Label htmlFor="phone" className="text-gray-800">
                     Phone Number
                   </Label>
                   <Input
@@ -223,7 +223,7 @@ const Register = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="password" className="text-foreground">
+                  <Label htmlFor="password" className="text-gray-800">
                     Password
                   </Label>
                   <div className="relative">
@@ -240,7 +240,7 @@ const Register = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="confirmPassword" className="text-foreground">
+                  <Label htmlFor="confirmPassword" className="text-gray-800">
                     Confirm Password
                   </Label>
                   <div className="relative">
@@ -271,7 +271,7 @@ const Register = () => {
                         })
                       }
                     />
-                    <Label htmlFor="terms" className="text-sm">
+                    <Label htmlFor="terms" className="text-sm text-gray-800">
                       I agree to the{" "}
                       <Link
                         to="/terms"
@@ -293,7 +293,7 @@ const Register = () => {
                         })
                       }
                     />
-                    <Label htmlFor="marketing" className="text-sm">
+                    <Label htmlFor="marketing" className="text-sm text-gray-800">
                       I want to receive marketing communications
                     </Label>
                   </div>

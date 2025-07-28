@@ -497,15 +497,13 @@ const Rewards = () => {
               {achievements.map((achievement) => (
                 <Card
                   key={achievement.id}
-                  className={`glass-card ${
-                    achievement.unlocked ? "ring-2 ring-green-300" : ""
-                  } hover-glow`}
+                  className={`glass-card hover-glow ${
+                    achievement.unlocked ? "ring-2 ring-green-300" : "grayscale opacity-60"
+                  }`}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
-                      <div
-                        className={`text-4xl ${achievement.unlocked ? "grayscale-0" : "grayscale opacity-50"}`}
-                      >
+                      <div className="text-4xl">
                         {achievement.icon}
                       </div>
                       <div className="flex-1">
