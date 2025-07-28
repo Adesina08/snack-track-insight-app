@@ -1,6 +1,9 @@
 import pkg from 'pg';
 const { Pool } = pkg;
 import crypto from 'node:crypto';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const connectionString =
   process.env.DATABASE_URL ||

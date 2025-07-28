@@ -4,7 +4,10 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import crypto from 'node:crypto';
+import dotenv from 'dotenv';
 import { pool, initDb } from './db.js';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
