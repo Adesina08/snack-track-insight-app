@@ -100,6 +100,9 @@ const Register = () => {
         const token = await authUtils.generateToken(user);
         authUtils.setAuthToken(token);
 
+        // Mark first login so the dashboard can greet the user properly
+        localStorage.setItem("firstLogin", "true");
+
         localStorage.removeItem("registerForm"); // Clear saved form on success
 
         toast({

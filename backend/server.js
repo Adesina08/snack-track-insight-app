@@ -6,16 +6,46 @@ import { spawn } from 'child_process';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { BlobServiceClient } from '@azure/storage-blob';
 import { pool, initDb } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '../.env') });
+
+const blobServiceClient = process.env.AZURE_STORAGE_CONNECTION_STRING
+  ? BlobServiceClient.fromConnectionString(
+      process.env.AZURE_STORAGE_CONNECTION_STRING,
+    )
+  : null;
+const audioContainer =
+  blobServiceClient?.getContainerClient(
+    process.env.AZURE_AUDIO_CONTAINER || 'audio-logs',
+  );
+const mediaContainer =
+  blobServiceClient?.getContainerClient(
+    process.env.AZURE_MEDIA_CONTAINER || 'media-logs',
+  );
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 const uploadsDir = path.join(process.cwd(), 'uploads');
 fs.mkdirSync(uploadsDir, { recursive: true });
 const upload = multer({ dest: uploadsDir });
+
+async function uploadToAzure(filePath, originalName, mimeType) {
+  if (!blobServiceClient) {
+    return { url: `/uploads/${path.basename(filePath)}`, filename: path.basename(filePath) };
+  }
+  const container = mimeType.startsWith('audio/') ? audioContainer : mediaContainer;
+  const blobName = `${Date.now()}-${crypto.randomUUID()}${path.extname(originalName)}`;
+  const blockBlobClient = container.getBlockBlobClient(blobName);
+  const data = await fs.promises.readFile(filePath);
+  await blockBlobClient.uploadData(data, {
+    blobHTTPHeaders: { blobContentType: mimeType },
+  });
+  await fs.promises.unlink(filePath).catch(() => {});
+  return { url: blockBlobClient.url, filename: blobName };
+}
 
 try {
   await initDb();
@@ -34,12 +64,21 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.post('/api/upload', upload.single('file'), (req, res) => {
+app.post('/api/upload', upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });
   }
-  const url = `/uploads/${req.file.filename}`;
-  res.json({ url, filename: req.file.filename });
+  try {
+    const result = await uploadToAzure(
+      req.file.path,
+      req.file.originalname,
+      req.file.mimetype,
+    );
+    res.json(result);
+  } catch (err) {
+    console.error('Upload failed:', err);
+    res.status(500).json({ message: 'Upload failed' });
+  }
 });
 
 
@@ -58,7 +97,9 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
     if (fs.existsSync(venvPython)) {
       pythonCmd = venvPython;
     }
-    const python = spawn(pythonCmd, [scriptPath, req.file.path]);
+    const python = spawn(pythonCmd, [scriptPath, req.file.path], {
+      env: { ...process.env, PYTHONIOENCODING: 'utf-8' },
+    });
     let output = '';
     python.stdout.on('data', (data) => {
       output += data.toString();
