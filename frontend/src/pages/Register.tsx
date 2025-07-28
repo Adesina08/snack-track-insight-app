@@ -25,7 +25,7 @@ const Register = () => {
     password: "",
     confirmPassword: "",
     agreeToTerms: false,
-    agreeToMarketing: false
+    agreeToMarketing: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
@@ -104,7 +104,8 @@ const Register = () => {
 
         toast({
           title: "Account created successfully!",
-          description: "Welcome to SnackTrack. You can now start logging your consumption.",
+          description:
+            "Welcome to SnackTrack. You can now start logging your consumption.",
         });
 
         // TODO: create-onboarding-component-with-local-storage
@@ -133,151 +134,200 @@ const Register = () => {
 
   return (
     <>
-    <div className="min-h-screen gradient-secondary flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="mb-6">
-          <Link to="/" className="flex items-center text-blue-600 hover:text-blue-700 transition-colors hover-glow">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Link>
-        </div>
+      <div className="min-h-screen gradient-secondary flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="mb-6">
+            <Link
+              to="/"
+              className="flex items-center text-blue-600 hover:text-blue-700 transition-colors hover-glow"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Home
+            </Link>
+          </div>
 
-        <Card className="glass-card hover-glow">
-          <CardHeader className="text-center">
-            <div className="w-12 h-12 gradient-primary rounded-full mx-auto mb-4 shadow-lg"></div>
-            <CardTitle className="text-2xl font-bold text-gradient">Create Your Account</CardTitle>
-            <p className="text-muted-foreground">Join the SnackTrack community</p>
-          </CardHeader>
-
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    required
-                    className="border-blue-200 focus:border-blue-400 glass-effect"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    required
-                    className="border-blue-200 focus:border-blue-400 glass-effect"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                  className="border-blue-200 focus:border-blue-400 glass-effect"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                  className="border-blue-200 focus:border-blue-400 glass-effect"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <PasswordInput
-                    id="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    required
-                    className="border-blue-200 focus:border-blue-400 glass-effect"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <div className="relative">
-                  <PasswordInput
-                    id="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    required
-                    className="border-blue-200 focus:border-blue-400 glass-effect"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="terms"
-                    checked={formData.agreeToTerms}
-                    onCheckedChange={(checked) =>
-                      setFormData({ ...formData, agreeToTerms: checked as boolean })
-                    }
-                  />
-                  <Label htmlFor="terms" className="text-sm">
-                    I agree to the <Link to="/terms" className="text-blue-600 hover:underline">Terms and Conditions</Link>
-                  </Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="marketing"
-                    checked={formData.agreeToMarketing}
-                    onCheckedChange={(checked) =>
-                      setFormData({ ...formData, agreeToMarketing: checked as boolean })
-                    }
-                  />
-                  <Label htmlFor="marketing" className="text-sm">
-                    I want to receive marketing communications
-                  </Label>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full gradient-primary hover-glow text-white shadow-lg"
-                disabled={isLoading}
-              >
-                {isLoading ? "Creating Account..." : "Create Account"}
-              </Button>
-            </form>
-
-            <div className="mt-6 text-center">
+          <Card className="glass-card hover-glow">
+            <CardHeader className="text-center">
+              <div className="w-12 h-12 gradient-primary rounded-full mx-auto mb-4 shadow-lg"></div>
+              <CardTitle className="text-2xl font-bold text-gradient">
+                Create Your Account
+              </CardTitle>
               <p className="text-muted-foreground">
-                Already have an account?{" "}
-                <Link to="/login" className="text-blue-600 hover:underline font-semibold">
-                  Sign in here
-                </Link>
+                Join the SnackTrack community
               </p>
-            </div>
-          </CardContent>
-        </Card>
+            </CardHeader>
+
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="firstName" className="text-foreground">
+                      First Name
+                    </Label>
+                    <Input
+                      id="firstName"
+                      value={formData.firstName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, firstName: e.target.value })
+                      }
+                      required
+                      className="border-blue-200 focus:border-blue-400 glass-effect"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="lastName" className="text-foreground">
+                      Last Name
+                    </Label>
+                    <Input
+                      id="lastName"
+                      value={formData.lastName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, lastName: e.target.value })
+                      }
+                      required
+                      className="border-blue-200 focus:border-blue-400 glass-effect"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="email" className="text-foreground">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    required
+                    className="border-blue-200 focus:border-blue-400 glass-effect"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="phone" className="text-foreground">
+                    Phone Number
+                  </Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                    required
+                    className="border-blue-200 focus:border-blue-400 glass-effect"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="password" className="text-foreground">
+                    Password
+                  </Label>
+                  <div className="relative">
+                    <PasswordInput
+                      id="password"
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
+                      required
+                      className="border-blue-200 focus:border-blue-400 glass-effect"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="confirmPassword" className="text-foreground">
+                    Confirm Password
+                  </Label>
+                  <div className="relative">
+                    <PasswordInput
+                      id="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          confirmPassword: e.target.value,
+                        })
+                      }
+                      required
+                      className="border-blue-200 focus:border-blue-400 glass-effect"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="terms"
+                      checked={formData.agreeToTerms}
+                      onCheckedChange={(checked) =>
+                        setFormData({
+                          ...formData,
+                          agreeToTerms: checked as boolean,
+                        })
+                      }
+                    />
+                    <Label htmlFor="terms" className="text-sm">
+                      I agree to the{" "}
+                      <Link
+                        to="/terms"
+                        className="text-blue-600 hover:underline"
+                      >
+                        Terms and Conditions
+                      </Link>
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="marketing"
+                      checked={formData.agreeToMarketing}
+                      onCheckedChange={(checked) =>
+                        setFormData({
+                          ...formData,
+                          agreeToMarketing: checked as boolean,
+                        })
+                      }
+                    />
+                    <Label htmlFor="marketing" className="text-sm">
+                      I want to receive marketing communications
+                    </Label>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full gradient-primary hover-glow text-white shadow-lg"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Creating Account..." : "Create Account"}
+                </Button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <p className="text-muted-foreground">
+                  Already have an account?{" "}
+                  <Link
+                    to="/login"
+                    className="text-blue-600 hover:underline font-semibold"
+                  >
+                    Sign in here
+                  </Link>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
-    <NotificationPrompt
-      open={showNotificationPrompt}
-      onEnable={handleEnableNotifications}
-      onClose={handleClosePrompt}
-    />
+      <NotificationPrompt
+        open={showNotificationPrompt}
+        onEnable={handleEnableNotifications}
+        onClose={handleClosePrompt}
+      />
     </>
   );
 };
