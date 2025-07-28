@@ -1,9 +1,12 @@
 import pkg from 'pg';
 const { Pool } = pkg;
 import crypto from 'node:crypto';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
-dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const isLocal =
   process.env.DB_HOST?.includes('localhost') ||
