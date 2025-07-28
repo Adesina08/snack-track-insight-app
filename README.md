@@ -23,6 +23,9 @@ npm install
 
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
+
+The Vite server proxies requests from `/api` to the backend running on port `4000`.
+Ensure `npm start` is running inside `backend` so API requests succeed during development.
 ```
 
 To run the **backend** API server (requires Python and the `whisper` package):

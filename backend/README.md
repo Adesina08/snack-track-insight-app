@@ -12,6 +12,7 @@ npm start
 ```
 
 The server listens on `PORT` (defaults to `4000`) and uses the `DB_*` environment variables to connect to PostgreSQL. It also exposes a health endpoint at `/api/health` that returns `{ status: 'ok' }`.
+During development the frontend's Vite server proxies `/api` requests to this port, so make sure it is running before interacting with the app.
 
 ### Environment variables
 
