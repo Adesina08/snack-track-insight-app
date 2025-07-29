@@ -22,7 +22,7 @@ During development the frontend's Vite server proxies `/api` requests to this po
 
 ### Environment variables
 
-Copy the `.env.example` file from the repository root to `.env` in this directory and define at least the following variables:
+Create a `.env` file in this directory for local development and define at least the following variables. In production set them as environment variables (e.g. Azure App Settings):
 
 ```env
 DB_HOST=localhost
@@ -33,7 +33,7 @@ DB_NAME=snacktrack
 PORT=4000
 ```
 
-These values are loaded automatically at runtime using `dotenv`.
+If a `.env` file is present these values are loaded with `dotenv`.
 When connecting to a hosted database (e.g. Render or Heroku), provide the host, port, username and password from your provider. TLS is automatically enabled for any host that is not `localhost`.
 
 Future API routes should be added to `server.js`.

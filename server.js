@@ -10,7 +10,12 @@ import { BlobServiceClient } from '@azure/storage-blob';
 import { pool, initDb } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(__dirname, '.env') });
+const envPath = path.join(__dirname, '.env');
+if (fs.existsSync(envPath)) {
+  dotenv.config({ path: envPath });
+} else {
+  dotenv.config();
+}
 
 const blobServiceClient = process.env.AZURE_STORAGE_CONNECTION_STRING
   ? BlobServiceClient.fromConnectionString(
