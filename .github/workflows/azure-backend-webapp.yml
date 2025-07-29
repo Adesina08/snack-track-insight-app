@@ -9,7 +9,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      AZURE_WEBAPP_NAME: SnacksTrackBackendv21a
+      AZURE_WEBAPP_NAME: <your-backend-app>
     steps:
       - uses: actions/checkout@v3
 
@@ -26,8 +26,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python setup_env.py
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2

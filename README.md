@@ -106,6 +106,6 @@ The frontend is published using **Azure Static Web Apps** (`.github/workflows/az
 
 1. Create an Azure Web App for the backend and download its publish profile. Add the profile as the repository secret `AZURE_WEBAPP_PUBLISH_PROFILE`.
 2. Set the `AZURE_WEBAPP_NAME` environment variable in the workflow (replace `<your-backend-app>` with your actual app name).
-3. The workflow installs Node dependencies and then runs `pip install -r requirements.txt` so the Python Whisper dependencies are available during deployment.
+3. The workflow installs Node dependencies and then runs `python setup_env.py` to create a `.venv` folder with the Python Whisper dependencies before packaging the app.
 
 Requests from the static site to `/api` are proxied to the backend using `frontend/staticwebapp.config.json`. Update this file with your backend domain so the frontend can communicate with the API once deployed.
