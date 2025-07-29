@@ -9,7 +9,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      AZURE_WEBAPP_NAME: <your-backend-app>
+      AZURE_WEBAPP_NAME: SnacksTrackBackendv21a
     steps:
       - uses: actions/checkout@v3
 
