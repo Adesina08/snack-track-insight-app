@@ -47,6 +47,7 @@ async function uploadToAzure(filePath, originalName, mimeType) {
   return { url: blockBlobClient.url, filename: blobName };
 }
 
+let dbReady = true;
 try {
   await initDb();
 } catch (err) {
@@ -54,14 +55,18 @@ try {
     'Failed to connect to the database. Ensure PostgreSQL is running and DB_* variables are correct.',
   );
   console.error(err);
-  process.exit(1);
+  dbReady = false;
 }
 
 app.use(express.json());
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.get('/', (_req, res) => {
-  res.send('Backend running');
+  if (dbReady) {
+    res.send('Backend running');
+  } else {
+    res.send('Backend running (DB disconnected)');
+  }
 });
 
 app.get('/api/health', (_req, res) => {
