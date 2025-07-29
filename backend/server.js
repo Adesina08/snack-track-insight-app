@@ -19,11 +19,11 @@ const blobServiceClient = process.env.AZURE_STORAGE_CONNECTION_STRING
   : null;
 const audioContainer =
   blobServiceClient?.getContainerClient(
-    process.env.AZURE_AUDIO_CONTAINER || 'audio-logs',
+    process.env.AZURE_AUDIO_CONTAINER
   );
 const mediaContainer =
   blobServiceClient?.getContainerClient(
-    process.env.AZURE_MEDIA_CONTAINER || 'media-logs',
+    process.env.AZURE_MEDIA_CONTAINER
   );
 
 const app = express();
