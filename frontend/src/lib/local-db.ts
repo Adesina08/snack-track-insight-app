@@ -50,8 +50,16 @@ function toCamelCase(obj: any): any {
   return obj;
 }
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
+function buildUrl(endpoint: string): string {
+  if (!API_BASE) return `/api${endpoint}`;
+  const base = API_BASE.replace(/\/$/, '');
+  return `${base}/api${endpoint}`;
+}
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(`/api${endpoint}`, {
+  const res = await fetch(buildUrl(endpoint), {
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     ...options
   });
