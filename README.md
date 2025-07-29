@@ -60,7 +60,6 @@ AZURE_MEDIA_CONTAINER=media-logs
 ```
 
 `VITE_API_BASE_URL` is optional when the frontend and backend are served from the same domain. Set it to your backend URL when running the frontend locally against a remote API.
-
 The server reads these values from environment variables at runtime. For Azure deployments define them in **App Settings** so `process.env` contains the required values.
 
 The app requires `VITE_JWT_SECRET` for authentication tokens. The `DB_*` variables define the PostgreSQL connection used by the backend. When deploying on services like Render, use the host, port, username and password provided by the platform. SSL is automatically enabled for any host that is not `localhost`.
