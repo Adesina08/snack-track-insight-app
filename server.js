@@ -60,6 +60,10 @@ try {
 app.use(express.json());
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
+app.get('/', (_req, res) => {
+  res.send('Backend running');
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
