@@ -99,3 +99,13 @@ This project is built with:
 ### Logging meals
 
 On the log consumption page you can switch between **Manual Entry** and **AI Capture**. Manual entry only shows the meal form, while AI Capture also records audio or video which is transcribed using Whisper.
+
+### Deploying to Azure
+
+The frontend is published using **Azure Static Web Apps** (`.github/workflows/azure-static-web-apps-witty-stone-092422e03.yml`). To deploy the Express backend on **Azure Web App**, a workflow is provided at `.github/workflows/azure-backend-webapp.yml`.
+
+1. Create an Azure Web App for the backend and download its publish profile. Add the profile as the repository secret `AZURE_WEBAPP_PUBLISH_PROFILE`.
+2. Set the `AZURE_WEBAPP_NAME` environment variable in the workflow (replace `<your-backend-app>` with your actual app name).
+3. The workflow installs Node dependencies and then runs `pip install -r requirements.txt` so the Python Whisper dependencies are available during deployment.
+
+Requests from the static site to `/api` are proxied to the backend using `frontend/staticwebapp.config.json`. Update this file with your backend domain so the frontend can communicate with the API once deployed.
