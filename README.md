@@ -25,14 +25,13 @@ npm install
 npm run dev
 
 The Vite server proxies requests from `/api` to the backend running on port `4000`.
-Ensure `npm start` is running inside `backend` so API requests succeed during development.
+Ensure `npm start` is running in the project root so API requests succeed during development.
 ```
 
 To run the **backend** API server (requires Python and the `openai-whisper` package; `ffmpeg` must be installed):
 
 ```sh
-cd backend
-npm install
+npm install # from the project root
 # Creates a `.venv` folder and installs Python packages inside it
 python setup_env.py
 npm start
@@ -61,7 +60,7 @@ AZURE_MEDIA_CONTAINER=media-logs
 
 The app requires `VITE_JWT_SECRET` for authentication tokens. The `DB_*` variables define the PostgreSQL connection used by the backend. When deploying on services like Render, use the host, port, username and password provided by the platform. SSL is automatically enabled for any host that is not `localhost`.
 
-If `AZURE_STORAGE_CONNECTION_STRING` is provided, uploaded audio and video files are automatically pushed to the specified storage containers (`AZURE_AUDIO_CONTAINER` for audio-only logs and `AZURE_MEDIA_CONTAINER` for video or mixed media). If these variables are not set the files are saved locally in `backend/uploads`.
+If `AZURE_STORAGE_CONNECTION_STRING` is provided, uploaded audio and video files are automatically pushed to the specified storage containers (`AZURE_AUDIO_CONTAINER` for audio-only logs and `AZURE_MEDIA_CONTAINER` for video or mixed media). If these variables are not set the files are saved locally in `uploads`.
 
 ### Local database
 
