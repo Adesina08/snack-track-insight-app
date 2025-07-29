@@ -266,8 +266,8 @@ const LogConsumption = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gradient mb-2">Log Your Naija Meal</h1>
-            <p className="text-muted-foreground">Record your Nigerian food experience and earn points!</p>
+            <h1 className="text-3xl font-bold text-gradient mb-2">Share your snacking experience</h1>
+            <p className="text-muted-foreground">Record your Snacks experience and earn points!</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -334,7 +334,7 @@ const LogConsumption = () => {
                         </div>
                       </div>
                       <p className="text-muted-foreground mb-6">
-                        Record yourself talking about your Nigerian meal experience. 
+                        Record yourself talking about your Snacks experience. 
                         Mention what you're eating, where you are, who you're with, and how it tastes!
                       </p>
                       {!isRecording ? (
@@ -392,7 +392,7 @@ const LogConsumption = () => {
                       <div className="text-center py-6 space-y-2">
                         <div className="inline-flex items-center space-x-2 text-primary">
                           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                          <span>Azure AI is analyzing your Naija meal...</span>
+                          <span>AI is analyzing your snack experience...</span>
                         </div>
                         <Progress value={analysisProgress} className="h-2 w-full" />
                         <p className="text-sm text-muted-foreground">{Math.round(analysisProgress)}%</p>
@@ -405,7 +405,7 @@ const LogConsumption = () => {
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           {aiAnalysis.detectedProducts && (
                             <div>
-                              <span className="text-primary font-medium">Nigerian Foods:</span>
+                              <span className="text-primary font-medium">Snacks:</span>
                               <span className="ml-2 text-foreground">{aiAnalysis.detectedProducts.join(', ')}</span>
                             </div>
                           )}
@@ -451,7 +451,7 @@ const LogConsumption = () => {
                       ) : (
                         <>
                           <Upload className="h-4 w-4 mr-2" />
-                          Log My Naija Meal
+                          Submit my experience👍
                         </>
                       )}
                     </Button>
@@ -556,7 +556,7 @@ const LogConsumption = () => {
                   ) : (
                     <>
                       <Upload className="h-4 w-4 mr-2" />
-                      Log My Naija Meal
+                      Submit my experience👍
                     </>
                   )}
                 </Button>
