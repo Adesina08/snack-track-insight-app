@@ -2,7 +2,7 @@
   "routes": [
     {
       "route": "/api/*",
-      "rewrite": "https://<your-backend-app>.azurewebsites.net/api/:*"
+      "rewrite": "https://snackstrackbackendv21a-c0eyere2dbfthyhn.southafricanorth-01.azurewebsites.net/api/:*"
     }
   ]
 }
