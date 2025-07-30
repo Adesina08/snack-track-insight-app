@@ -1,3 +1,4 @@
+import { buildUrl } from './local-db';
 
 export interface AzureAIAnalysis {
   transcription?: string;
@@ -23,7 +24,7 @@ export class AzureAIService {
     const formData = new FormData();
     formData.append('audio', audioBlob);
 
-    const response = await fetch('/api/transcribe', {
+    const response = await fetch(buildUrl('/transcribe'), {
       method: 'POST',
       body: formData,
     });

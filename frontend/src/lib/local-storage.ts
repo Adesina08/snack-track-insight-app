@@ -5,8 +5,10 @@ export interface UploadResult {
   error?: string;
 }
 
+import { buildUrl } from './local-db';
+
 export class LocalStorageService {
-  private uploadEndpoint = '/api/upload';
+  private uploadEndpoint = buildUrl('/upload');
 
   async uploadFile(file: File): Promise<UploadResult> {
     const formData = new FormData();
