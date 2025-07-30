@@ -28,18 +28,13 @@ The Vite server proxies requests from `/api` to the backend running on port `400
 Ensure `npm start` is running in the project root so API requests succeed during development.
 ```
 
-To run the **backend** API server (requires Python and the `openai-whisper` package; `ffmpeg` must be installed):
+To run the **backend** API server make sure `ffmpeg` is installed and then
+install the Node.js dependencies:
 
 ```sh
 npm install # from the project root
-# Creates a `.venv` folder and installs Python packages inside it
-python setup_env.py
 npm start
 ```
-
-On Windows the startup script automatically patches the Whisper dependency so it
-loads the correct C runtime (`msvcrt.dll`). If a `.venv` directory is present,
-the backend automatically uses its Python interpreter when processing uploads.
 
 The server automatically creates an `uploads` folder for media files if it does not exist.
 
@@ -117,12 +112,12 @@ You can publish the frontend using **Azure Static Web Apps** and deploy the Expr
 
 Requests from the static site to `/api` are proxied to the backend using `frontend/staticwebapp.config.json`. Update this file with your backend domain so the frontend can communicate with the API once deployed. If the frontend and backend appear disconnected, verify that this file points to your deployed backend's URL.
 
-The `/api/transcribe` endpoint depends on Python 3, `ffmpeg` and either the
-`openai-whisper` or `azure-cognitiveservices-speech` library. When
-`AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` are defined the server uses Azure
-Speech to Text; otherwise it falls back to Whisper. Ensure these dependencies are
-installed (run `python setup_env.py`) before deploying the backend. Without
-them the transcription step will fail and AI Capture will display an error.
+The `/api/transcribe` endpoint relies on `ffmpeg` and the
+`microsoft-cognitiveservices-speech-sdk` package. When
+`AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` are provided the server uses Azure
+Speech to Text to process uploaded audio. Ensure these dependencies are
+installed before deploying the backend. Without them the transcription step will
+fail and AI Capture will display an error.
 
 ### Building a mobile app
 
