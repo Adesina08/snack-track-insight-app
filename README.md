@@ -28,18 +28,13 @@ The Vite server proxies requests from `/api` to the backend running on port `400
 Ensure `npm start` is running in the project root so API requests succeed during development.
 ```
 
-To run the **backend** API server (requires Python and the `openai-whisper` package; `ffmpeg` must be installed):
+To run the **backend** API server make sure `ffmpeg` is installed and then
+install the Node.js dependencies:
 
 ```sh
 npm install # from the project root
-# Creates a `.venv` folder and installs Python packages inside it
-python setup_env.py
 npm start
 ```
-
-On Windows the startup script automatically patches the Whisper dependency so it
-loads the correct C runtime (`msvcrt.dll`). If a `.venv` directory is present,
-the backend automatically uses its Python interpreter when processing uploads.
 
 The server automatically creates an `uploads` folder for media files if it does not exist.
 
