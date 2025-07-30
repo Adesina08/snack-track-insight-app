@@ -109,13 +109,6 @@ On the log consumption page you can switch between **Manual Entry** and **AI Cap
 
 ### Deploying to Azure
 
-The frontend is published using **Azure Static Web Apps** (`.github/workflows/azure-static-web-apps-witty-stone-092422e03.yml`).
-Update this file with your static web app token (e.g. `AZURE_STATIC_WEB_APPS_API_TOKEN_CALM_GLACIER_0AE376703`).
-To deploy the Express backend on **Azure Web App**, a workflow is provided at `.github/workflows/azure-backend-webapp.yml`.
+You can publish the frontend using **Azure Static Web Apps** and deploy the Express backend to **Azure Web App**. Configure your preferred CI/CD solution or deploy manually as needed.
 
-1. Create an Azure Web App for the backend and download its publish profile. Add the profile as the repository secret `AZURE_WEBAPP_PUBLISH_PROFILE`.
-2. Set the `AZURE_WEBAPP_NAME` environment variable in the workflow. For this project the backend is named **SnacksAppBackendv2b**.
-3. The workflow installs Node dependencies and then runs `python setup_env.py` to create a `.venv` folder with the Python Whisper dependencies before packaging the app.
-
-Requests from the static site to `/api` are proxied to the backend using `frontend/staticwebapp.config.json`. Update this file with your backend domain so the frontend can communicate with the API once deployed.
-If the frontend and backend appear disconnected, verify that this file points to your deployed backend's URL.
+Requests from the static site to `/api` are proxied to the backend using `frontend/staticwebapp.config.json`. Update this file with your backend domain so the frontend can communicate with the API once deployed. If the frontend and backend appear disconnected, verify that this file points to your deployed backend's URL.
