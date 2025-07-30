@@ -50,9 +50,9 @@ function toCamelCase(obj: any): any {
   return obj;
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
-function buildUrl(endpoint: string): string {
+export function buildUrl(endpoint: string): string {
   if (!API_BASE) return `/api${endpoint}`;
   let base = API_BASE.replace(/\/$/, '');
   if (base.endsWith('/api')) {
