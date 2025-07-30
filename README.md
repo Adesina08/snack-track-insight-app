@@ -114,3 +114,8 @@ On the log consumption page you can switch between **Manual Entry** and **AI Cap
 You can publish the frontend using **Azure Static Web Apps** and deploy the Express backend to **Azure Web App**. Configure your preferred CI/CD solution or deploy manually as needed.
 
 Requests from the static site to `/api` are proxied to the backend using `frontend/staticwebapp.config.json`. Update this file with your backend domain so the frontend can communicate with the API once deployed. If the frontend and backend appear disconnected, verify that this file points to your deployed backend's URL.
+
+The `/api/transcribe` endpoint depends on Python 3, `openai-whisper`, and `ffmpeg`.
+When deploying the backend to Azure Web App, make sure these dependencies are
+installed (for example by running `python setup_env.py`). Without them the
+transcription step will fail and AI Capture will display an error.
