@@ -123,3 +123,28 @@ The `/api/transcribe` endpoint depends on Python 3, `ffmpeg` and either the
 Speech to Text; otherwise it falls back to Whisper. Ensure these dependencies are
 installed (run `python setup_env.py`) before deploying the backend. Without
 them the transcription step will fail and AI Capture will display an error.
+
+### Building a mobile app
+
+This project already includes [Capacitor](https://capacitorjs.com/) so the
+frontend can be packaged as a native Android or iOS application. To generate the
+mobile projects you will need Android Studio (for APKs) and Xcode (for iOS).
+
+Run the following commands from the project root:
+
+```sh
+# Install Capacitor's native projects (only once)
+npx cap add android
+npx cap add ios
+
+# Build the web assets and copy them into the native projects
+npm run build
+npx cap sync
+
+# Open the projects in their respective IDEs
+npx cap open android   # opens Android Studio
+npx cap open ios       # opens Xcode
+```
+
+From Android Studio or Xcode you can build release versions and generate the APK
+or iOS app for distribution.
