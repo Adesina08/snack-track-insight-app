@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js app to Azure Web App - SnacksTrackBackendv21a
+name: Build and deploy Node.js app to Azure Web App - SnacksAppBackendv2b
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: read #This is required for actions/checkout
 
@@ -28,7 +28,7 @@ jobs:
           npm install
           npm run build --if-present
           npm run test --if-present
-      
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
@@ -51,15 +51,15 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_5C3168DBEC9043738F1481ECD145A088 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_165F566C15F3443485FCF6E6939CBD29 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_18B52309AA3C48DBBE4ED33191A89648 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_A2B8FE70BEFB4002B8169AFC77C679D1 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A668D3DF6BB14B8D9DC67505FA7AF93D }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_CBF84C40FA144B9B9682F0023E7531C8 }}
 
       - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
         with:
-          app-name: 'SnacksTrackBackendv21a'
+          app-name: 'SnacksAppBackendv2b'
           slot-name: 'Production'
           package: .
           
