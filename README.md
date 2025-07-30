@@ -45,9 +45,12 @@ The server automatically creates an `uploads` folder for media files if it does 
 
 ### Environment Variables
 
-Copy `.env.example` to `.env` in the project root (or use your hosting provider's configuration) and define the following variables:
+Create a `.env` file in the project root for local development and define the following variables. In production, set them in your hosting provider's configuration (for Azure use **App Settings**):
 
 VITE_JWT_SECRET=<your secret key>
+VITE_API_BASE_URL=<deployed backend URL>
+# Use only the domain, not the `/api` path. The app will automatically
+# append `/api` when contacting the backend.
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=snackuser
@@ -57,6 +60,10 @@ AZURE_STORAGE_CONNECTION_STRING=<your connection string>
 AZURE_AUDIO_CONTAINER=audio-logs
 AZURE_MEDIA_CONTAINER=media-logs
 ```
+
+`VITE_API_BASE_URL` is optional when the frontend and backend are served from the same domain. Set it to your backend URL when running the frontend locally against a remote API.
+
+The server reads these values from environment variables at runtime. For Azure deployments define them in **App Settings** so `process.env` contains the required values.
 
 The app requires `VITE_JWT_SECRET` for authentication tokens. The `DB_*` variables define the PostgreSQL connection used by the backend. When deploying on services like Render, use the host, port, username and password provided by the platform. SSL is automatically enabled for any host that is not `localhost`.
 
@@ -102,10 +109,13 @@ On the log consumption page you can switch between **Manual Entry** and **AI Cap
 
 ### Deploying to Azure
 
-The frontend is published using **Azure Static Web Apps** (`.github/workflows/azure-static-web-apps-witty-stone-092422e03.yml`). To deploy the Express backend on **Azure Web App**, a workflow is provided at `.github/workflows/azure-backend-webapp.yml`.
+The frontend is published using **Azure Static Web Apps** (`.github/workflows/azure-static-web-apps-witty-stone-092422e03.yml`).
+Update this file with your static web app token (e.g. `AZURE_STATIC_WEB_APPS_API_TOKEN_CALM_GLACIER_0AE376703`).
+To deploy the Express backend on **Azure Web App**, a workflow is provided at `.github/workflows/azure-backend-webapp.yml`.
 
 1. Create an Azure Web App for the backend and download its publish profile. Add the profile as the repository secret `AZURE_WEBAPP_PUBLISH_PROFILE`.
-2. Set the `AZURE_WEBAPP_NAME` environment variable in the workflow (replace `<your-backend-app>` with your actual app name).
+2. Set the `AZURE_WEBAPP_NAME` environment variable in the workflow. For this project the backend is named **SnacksAppBackendv2b**.
 3. The workflow installs Node dependencies and then runs `python setup_env.py` to create a `.venv` folder with the Python Whisper dependencies before packaging the app.
 
 Requests from the static site to `/api` are proxied to the backend using `frontend/staticwebapp.config.json`. Update this file with your backend domain so the frontend can communicate with the API once deployed.
+If the frontend and backend appear disconnected, verify that this file points to your deployed backend's URL.
