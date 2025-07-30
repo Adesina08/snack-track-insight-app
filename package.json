@@ -10,7 +10,10 @@
     "lint": "npm --prefix frontend run lint",
     "preview": "npm --prefix frontend run preview",
     "start": "node server.js",
-    "dev:backend": "nodemon server.js"
+    "dev:backend": "nodemon server.js",
+    "mobile:sync": "npm run build && npx cap sync --config frontend/capacitor.config.ts",
+    "mobile:android": "npm run mobile:sync && npx cap open android --config frontend/capacitor.config.ts",
+    "mobile:ios": "npm run mobile:sync && npx cap open ios --config frontend/capacitor.config.ts"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.15.0",
