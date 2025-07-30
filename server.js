@@ -4,6 +4,8 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import crypto from 'node:crypto';
+import os from 'os';
+import * as speechsdk from 'microsoft-cognitiveservices-speech-sdk';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -116,33 +118,60 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
   }
 
   try {
-    const scriptPath = path.join(process.cwd(), 'transcribe.py');
-    let pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
-    const venvPython =
-      process.platform === 'win32'
-        ? path.join(__dirname, '.venv', 'Scripts', 'python.exe')
-        : path.join(__dirname, '.venv', 'bin', 'python');
-    if (fs.existsSync(venvPython)) {
-      pythonCmd = venvPython;
+    const tempPath = path.join(
+      os.tmpdir(),
+      `${Date.now()}-${crypto.randomUUID()}.wav`,
+    );
+
+    await new Promise((resolve, reject) => {
+      const ffmpeg = spawn('ffmpeg', [
+        '-i',
+        req.file.path,
+        '-ac',
+        '1',
+        '-ar',
+        '16000',
+        tempPath,
+        '-y',
+      ]);
+      ffmpeg.on('error', reject);
+      ffmpeg.on('close', (code) => {
+        if (code === 0) resolve();
+        else reject(new Error('ffmpeg conversion failed'));
+      });
+    });
+
+    const { AZURE_SPEECH_KEY, AZURE_SPEECH_REGION } = process.env;
+    if (!AZURE_SPEECH_KEY || !AZURE_SPEECH_REGION) {
+      throw new Error('Azure Speech credentials not provided');
     }
-    const python = spawn(pythonCmd, [scriptPath, req.file.path], {
-      env: { ...process.env, PYTHONIOENCODING: 'utf-8' },
+
+    const speechConfig = speechsdk.SpeechConfig.fromSubscription(
+      AZURE_SPEECH_KEY,
+      AZURE_SPEECH_REGION,
+    );
+    speechConfig.speechRecognitionLanguage = 'en-US';
+
+    const audioBuffer = await fs.promises.readFile(tempPath);
+    const audioConfig = speechsdk.AudioConfig.fromWavFileInput(audioBuffer);
+    const recognizer = new speechsdk.SpeechRecognizer(
+      speechConfig,
+      audioConfig,
+    );
+    const text = await new Promise((resolve, reject) => {
+      recognizer.recognizeOnceAsync((result) => {
+        recognizer.close();
+        if (result.reason === speechsdk.ResultReason.RecognizedSpeech) {
+          resolve(result.text);
+        } else {
+          reject(new Error(result.errorDetails || 'Transcription failed'));
+        }
+      });
     });
-    let output = '';
-    python.stdout.on('data', (data) => {
-      output += data.toString();
-    });
-    python.stderr.on('data', (data) => {
-      console.error('Whisper error:', data.toString());
-    });
-    python.on('close', (code) => {
-      fs.unlink(req.file.path, () => {});
-      if (code === 0) {
-        res.json({ text: output.trim() });
-      } else {
-        res.status(500).json({ message: 'Transcription failed' });
-      }
-    });
+
+    fs.unlink(tempPath, () => {});
+    fs.unlink(req.file.path, () => {});
+    res.json({ text: text.trim() });
   } catch (err) {
     console.error('Transcription failed', err);
     fs.unlink(req.file.path, () => {});
