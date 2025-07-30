@@ -6,6 +6,7 @@ import { spawn } from 'child_process';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { pool, initDb } from './db.js';
 
@@ -63,6 +64,10 @@ try {
   dbReady = false;
 }
 
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+  : '*';
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 

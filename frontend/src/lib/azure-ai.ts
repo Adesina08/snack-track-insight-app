@@ -29,7 +29,14 @@ export class AzureAIService {
     });
 
     if (!response.ok) {
-      throw new Error('Transcription failed');
+      let msg = 'Transcription failed';
+      try {
+        const err = await response.json();
+        msg = err.message || msg;
+      } catch {
+        // ignore JSON parse errors
+      }
+      throw new Error(msg);
     }
 
     const data: { text: string } = await response.json();

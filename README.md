@@ -51,6 +51,7 @@ VITE_JWT_SECRET=<your secret key>
 VITE_API_BASE_URL=<deployed backend URL>
 # Use only the domain, not the `/api` path. The app will automatically
 # append `/api` when contacting the backend.
+CORS_ORIGIN=<allowed domains>
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=snackuser
@@ -62,6 +63,7 @@ AZURE_MEDIA_CONTAINER=media-logs
 ```
 
 `VITE_API_BASE_URL` is optional when the frontend and backend are served from the same domain. Set it to your backend URL when running the frontend locally against a remote API.
+`CORS_ORIGIN` specifies which domains may access the API. Provide your deployed frontend's URL (or a comma-separated list) so browsers can make cross-origin requests.
 
 The server reads these values from environment variables at runtime. For Azure deployments define them in **App Settings** so `process.env` contains the required values.
 
@@ -112,3 +114,8 @@ On the log consumption page you can switch between **Manual Entry** and **AI Cap
 You can publish the frontend using **Azure Static Web Apps** and deploy the Express backend to **Azure Web App**. Configure your preferred CI/CD solution or deploy manually as needed.
 
 Requests from the static site to `/api` are proxied to the backend using `frontend/staticwebapp.config.json`. Update this file with your backend domain so the frontend can communicate with the API once deployed. If the frontend and backend appear disconnected, verify that this file points to your deployed backend's URL.
+
+The `/api/transcribe` endpoint depends on Python 3, `openai-whisper`, and `ffmpeg`.
+When deploying the backend to Azure Web App, make sure these dependencies are
+installed (for example by running `python setup_env.py`). Without them the
+transcription step will fail and AI Capture will display an error.
