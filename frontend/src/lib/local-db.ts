@@ -54,7 +54,11 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 function buildUrl(endpoint: string): string {
   if (!API_BASE) return `/api${endpoint}`;
-  const base = API_BASE.replace(/\/$/, '');
+  let base = API_BASE.replace(/\/$/, '');
+  if (base.endsWith('/api')) {
+    base = base.slice(0, -4);
+  }
+
   return `${base}/api${endpoint}`;
 }
 
