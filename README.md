@@ -45,7 +45,7 @@ The server automatically creates an `uploads` folder for media files if it does 
 
 ### Environment Variables
 
-Create a `.env` file in the project root for local development and define the following variables. In production, set them in your hosting provider's configuration (for Azure use **App Settings**):
+Create a `.env` file in the project root for local development and define the following variables. In production, set them in your hosting provider's configuration (for Azure use **App Settings**). When running on Azure (detected via `WEBSITE_INSTANCE_ID`) the server ignores `.env` files and only uses values from the environment:
 
 VITE_JWT_SECRET=<your secret key>
 VITE_API_BASE_URL=<deployed backend URL>

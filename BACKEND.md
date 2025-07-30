@@ -33,7 +33,7 @@ DB_NAME=snacktrack
 PORT=4000
 ```
 
-If a `.env` file is present these values are loaded with `dotenv`.
+If a `.env` file is present these values are loaded with `dotenv` during local development. When `WEBSITE_INSTANCE_ID` is defined (the case on Azure Web Apps) the server skips loading `.env` files and relies solely on environment variables provided by the platform.
 When connecting to a hosted database (e.g. Render or Heroku), provide the host, port, username and password from your provider. TLS is automatically enabled for any host that is not `localhost`.
 
 Future API routes should be added to `server.js`.
