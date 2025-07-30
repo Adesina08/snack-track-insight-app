@@ -58,7 +58,6 @@ function buildUrl(endpoint: string): string {
   if (base.endsWith('/api')) {
     base = base.slice(0, -4);
   }
-
   return `${base}/api${endpoint}`;
 }
 
