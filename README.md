@@ -60,6 +60,8 @@ DB_NAME=snacktrack
 AZURE_STORAGE_CONNECTION_STRING=<your connection string>
 AZURE_AUDIO_CONTAINER=audio-logs
 AZURE_MEDIA_CONTAINER=media-logs
+AZURE_SPEECH_KEY=<your speech key>
+AZURE_SPEECH_REGION=<your speech region>
 ```
 
 `VITE_API_BASE_URL` is optional when the frontend and backend are served from the same domain. Set it to your backend URL when running the frontend locally against a remote API.
@@ -107,7 +109,7 @@ This project is built with:
 
 ### Logging meals
 
-On the log consumption page you can switch between **Manual Entry** and **AI Capture**. Manual entry only shows the meal form, while AI Capture also records audio or video which is transcribed using Whisper.
+On the log consumption page you can switch between **Manual Entry** and **AI Capture**. Manual entry only shows the meal form, while AI Capture also records audio or video which is transcribed using Azure Speech to Text when credentials are provided (otherwise Whisper is used).
 
 ### Deploying to Azure
 
@@ -115,7 +117,9 @@ You can publish the frontend using **Azure Static Web Apps** and deploy the Expr
 
 Requests from the static site to `/api` are proxied to the backend using `frontend/staticwebapp.config.json`. Update this file with your backend domain so the frontend can communicate with the API once deployed. If the frontend and backend appear disconnected, verify that this file points to your deployed backend's URL.
 
-The `/api/transcribe` endpoint depends on Python 3, `openai-whisper`, and `ffmpeg`.
-When deploying the backend to Azure Web App, make sure these dependencies are
-installed (for example by running `python setup_env.py`). Without them the
-transcription step will fail and AI Capture will display an error.
+The `/api/transcribe` endpoint depends on Python 3, `ffmpeg` and either the
+`openai-whisper` or `azure-cognitiveservices-speech` library. When
+`AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` are defined the server uses Azure
+Speech to Text; otherwise it falls back to Whisper. Ensure these dependencies are
+installed (run `python setup_env.py`) before deploying the backend. Without
+them the transcription step will fail and AI Capture will display an error.
