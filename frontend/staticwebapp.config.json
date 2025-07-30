@@ -2,7 +2,7 @@
   "routes": [
     {
       "route": "/api/*",
-      "rewrite": "https://snackstrackbackendv21a-c0eyere2dbfthyhn.southafricanorth-01.azurewebsites.net/api/:*"
+      "rewrite": "https://snacksappbackendv2b-b0erbpa2dmh6brg0.southafricanorth-01.azurewebsites.net/api/:*"
     }
   ]
 }
