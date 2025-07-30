@@ -11,11 +11,16 @@ import { BlobServiceClient } from '@azure/storage-blob';
 import { pool, initDb } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const envPath = path.join(__dirname, '.env');
-if (fs.existsSync(envPath)) {
-  dotenv.config({ path: envPath });
-} else {
-  dotenv.config();
+// Load .env only when not running on Azure. When deployed on Azure Web Apps the
+// environment variables are provided via App Settings and WEBSITE_INSTANCE_ID is
+// defined.
+if (!process.env.WEBSITE_INSTANCE_ID) {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  } else {
+    dotenv.config();
+  }
 }
 
 const blobServiceClient = process.env.AZURE_STORAGE_CONNECTION_STRING

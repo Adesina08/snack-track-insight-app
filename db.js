@@ -7,11 +7,16 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const envPath = path.join(__dirname, '.env');
-if (fs.existsSync(envPath)) {
-  dotenv.config({ path: envPath });
-} else {
-  dotenv.config();
+// Only load environment variables from a .env file when not running on Azure
+// (detected via the WEBSITE_INSTANCE_ID variable). Azure injects configuration
+// directly into process.env so loading a file could override those values.
+if (!process.env.WEBSITE_INSTANCE_ID) {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  } else {
+    dotenv.config();
+  }
 }
 
 const isLocal =
