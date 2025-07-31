@@ -184,7 +184,37 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
   } catch (err) {
     console.error('Transcription failed', err);
     fs.unlink(req.file.path, () => {});
-    res.status(500).json({ message: 'Transcription failed' });
+    const msg = err instanceof Error ? err.message : 'Transcription failed';
+    res.status(500).json({ message: msg });
+  }
+});
+
+app.post('/api/analyze', async (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ message: 'No text provided' });
+  if (!textAnalyticsClient) {
+    return res.status(500).json({ message: 'Text analytics not configured' });
+  }
+  try {
+    const [sentimentResult] = await textAnalyticsClient.analyzeSentiment([text]);
+    const [phrasesResult] = await textAnalyticsClient.extractKeyPhrases([text]);
+    const { positive, neutral, negative } = sentimentResult.confidenceScores;
+    const confidenceMap = {
+      positive,
+      neutral,
+      negative,
+    };
+    const confidence =
+      confidenceMap[sentimentResult.sentiment] ??
+      Math.max(positive, neutral, negative);
+    res.json({
+      sentiment: sentimentResult.sentiment,
+      confidence,
+      categories: phrasesResult.keyPhrases,
+    });
+  } catch (err) {
+    console.error('Text analysis failed', err);
+    res.status(500).json({ message: 'Text analysis failed' });
   }
 });
 

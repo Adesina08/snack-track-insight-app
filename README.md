@@ -121,6 +121,10 @@ Speech to Text to process uploaded audio. Ensure these dependencies are
 installed before deploying the backend. Without them the transcription step will
 fail and AI Capture will display an error.
 
+When transcription fails the server now returns the underlying error message in
+the response to help diagnose issues such as missing `ffmpeg` or invalid Azure
+credentials.
+
 The `/api/analyze` endpoint runs Azure Text Analytics on a block of text and
 returns its sentiment and key phrases. Provide
 `AZURE_TEXT_ANALYTICS_ENDPOINT` and `AZURE_TEXT_ANALYTICS_KEY` to enable this

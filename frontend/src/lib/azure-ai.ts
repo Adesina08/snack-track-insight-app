@@ -37,6 +37,7 @@ export class AzureAIService {
       } catch {
         // ignore JSON parse errors
       }
+      console.error('Detailed transcription error:', msg);
       throw new Error(msg);
     }
 
@@ -64,6 +65,7 @@ export class AzureAIService {
       } catch {
         // ignore parse errors
       }
+      console.error('Detailed analysis error:', msg);
       throw new Error(msg);
     }
 
