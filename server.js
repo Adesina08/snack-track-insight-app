@@ -2,10 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
-import { spawn } from 'child_process';
 import crypto from 'node:crypto';
-import os from 'os';
-import * as speechsdk from 'microsoft-cognitiveservices-speech-sdk';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -134,59 +131,32 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
   );
 
   try {
-    const tempPath = path.join(
-      os.tmpdir(),
-      `${Date.now()}-${crypto.randomUUID()}.wav`,
-    );
-
-    await new Promise((resolve, reject) => {
-      const ffmpeg = spawn('ffmpeg', [
-        '-i',
-        req.file.path,
-        '-ac',
-        '1',
-        '-ar',
-        '16000',
-        tempPath,
-        '-y',
-      ]);
-      ffmpeg.on('error', reject);
-      ffmpeg.on('close', (code) => {
-        if (code === 0) resolve();
-        else reject(new Error('ffmpeg conversion failed'));
-      });
-    });
-
     const { AZURE_SPEECH_KEY, AZURE_SPEECH_REGION } = process.env;
     if (!AZURE_SPEECH_KEY || !AZURE_SPEECH_REGION) {
       throw new Error('Azure Speech credentials not provided');
     }
 
-    const speechConfig = speechsdk.SpeechConfig.fromSubscription(
-      AZURE_SPEECH_KEY,
-      AZURE_SPEECH_REGION,
-    );
-    speechConfig.speechRecognitionLanguage = 'en-US';
-
-    const audioBuffer = await fs.promises.readFile(tempPath);
-    const audioConfig = speechsdk.AudioConfig.fromWavFileInput(audioBuffer);
-    const recognizer = new speechsdk.SpeechRecognizer(
-      speechConfig,
-      audioConfig,
-    );
-    const text = await new Promise((resolve, reject) => {
-      recognizer.recognizeOnceAsync((result) => {
-        recognizer.close();
-        if (result.reason === speechsdk.ResultReason.RecognizedSpeech) {
-          resolve(result.text);
-        } else {
-          reject(new Error(result.errorDetails || 'Transcription failed'));
-        }
-      });
+    const url = `https://${AZURE_SPEECH_REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=en-US`;
+    const audioBuffer = await fs.promises.readFile(req.file.path);
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Ocp-Apim-Subscription-Key': AZURE_SPEECH_KEY,
+        'Content-Type': req.file.mimetype,
+        Accept: 'application/json',
+        'Transfer-Encoding': 'chunked',
+      },
+      body: audioBuffer,
     });
 
-    fs.unlink(tempPath, () => {});
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(errText || 'Azure speech transcription failed');
+    }
+
+    const data = await response.json();
     fs.unlink(req.file.path, () => {});
+    const text = data.DisplayText || data.NBest?.[0]?.Display || '';
     res.json({ text: text.trim() });
   } catch (err) {
     console.error('Transcription failed', err);
