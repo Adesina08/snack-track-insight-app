@@ -57,6 +57,8 @@ AZURE_AUDIO_CONTAINER=audio-logs
 AZURE_MEDIA_CONTAINER=media-logs
 AZURE_SPEECH_KEY=<your speech key>
 AZURE_SPEECH_REGION=<your speech region>
+AZURE_TEXT_ANALYTICS_ENDPOINT=<your text analytics endpoint>
+AZURE_TEXT_ANALYTICS_KEY=<your text analytics api key>
 ```
 
 `VITE_API_BASE_URL` is optional when the frontend and backend are served from the same domain. Set it to your backend URL when running the frontend locally against a remote API.
