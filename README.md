@@ -57,6 +57,8 @@ AZURE_AUDIO_CONTAINER=audio-logs
 AZURE_MEDIA_CONTAINER=media-logs
 AZURE_SPEECH_KEY=<your speech key>
 AZURE_SPEECH_REGION=<your speech region>
+AZURE_TEXT_ANALYTICS_ENDPOINT=<your text analytics endpoint>
+AZURE_TEXT_ANALYTICS_KEY=<your text analytics api key>
 ```
 
 `VITE_API_BASE_URL` is optional when the frontend and backend are served from the same domain. Set it to your backend URL when running the frontend locally against a remote API.
@@ -118,6 +120,11 @@ The `/api/transcribe` endpoint relies on `ffmpeg` and the
 Speech to Text to process uploaded audio. Ensure these dependencies are
 installed before deploying the backend. Without them the transcription step will
 fail and AI Capture will display an error.
+
+The `/api/analyze` endpoint runs Azure Text Analytics on a block of text and
+returns its sentiment and key phrases. Provide
+`AZURE_TEXT_ANALYTICS_ENDPOINT` and `AZURE_TEXT_ANALYTICS_KEY` to enable this
+feature.
 
 ### Building a mobile app
 

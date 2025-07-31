@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { BlobServiceClient } from '@azure/storage-blob';
+import { TextAnalyticsClient, AzureKeyCredential } from '@azure/ai-text-analytics';
 import { pool, initDb } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -38,6 +39,14 @@ const mediaContainer =
   blobServiceClient?.getContainerClient(
     process.env.AZURE_MEDIA_CONTAINER
   );
+
+const textAnalyticsClient =
+  process.env.AZURE_TEXT_ANALYTICS_ENDPOINT && process.env.AZURE_TEXT_ANALYTICS_KEY
+    ? new TextAnalyticsClient(
+        process.env.AZURE_TEXT_ANALYTICS_ENDPOINT,
+        new AzureKeyCredential(process.env.AZURE_TEXT_ANALYTICS_KEY)
+      )
+    : null;
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -176,6 +185,35 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
     console.error('Transcription failed', err);
     fs.unlink(req.file.path, () => {});
     res.status(500).json({ message: 'Transcription failed' });
+  }
+});
+
+app.post('/api/analyze', async (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ message: 'No text provided' });
+  if (!textAnalyticsClient) {
+    return res.status(500).json({ message: 'Text analytics not configured' });
+  }
+  try {
+    const [sentimentResult] = await textAnalyticsClient.analyzeSentiment([text]);
+    const [phrasesResult] = await textAnalyticsClient.extractKeyPhrases([text]);
+    const { positive, neutral, negative } = sentimentResult.confidenceScores;
+    const confidenceMap = {
+      positive,
+      neutral,
+      negative,
+    };
+    const confidence =
+      confidenceMap[sentimentResult.sentiment] ??
+      Math.max(positive, neutral, negative);
+    res.json({
+      sentiment: sentimentResult.sentiment,
+      confidence,
+      categories: phrasesResult.keyPhrases,
+    });
+  } catch (err) {
+    console.error('Text analysis failed', err);
+    res.status(500).json({ message: 'Text analysis failed' });
   }
 });
 
