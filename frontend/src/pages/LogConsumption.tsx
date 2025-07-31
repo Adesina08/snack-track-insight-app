@@ -81,11 +81,10 @@ const LogConsumption = () => {
       };
 
       recorder.onstop = async () => {
-        const blob = new Blob(chunks, { 
-          type: recordingType === 'video' ? 'video/webm' : 'audio/webm' 
-        });
-        const file = new File([blob], `naija-meal-${Date.now()}.${recordingType === 'video' ? 'webm' : 'wav'}`, {
-          type: blob.type
+        const mimeType = recordingType === 'video' ? 'video/webm' : 'audio/webm';
+        const blob = new Blob(chunks, { type: mimeType });
+        const file = new File([blob], `naija-meal-${Date.now()}.webm`, {
+          type: mimeType
         });
         
         setSelectedFile(file);

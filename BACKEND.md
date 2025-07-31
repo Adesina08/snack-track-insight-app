@@ -7,7 +7,6 @@ This directory contains a minimal Express server used by the Snack Track Insight
 ```sh
 cd backend
 npm install
-# Ensure the `ffmpeg` binary is available for processing audio and video inputs.
 npm start
 ```
 

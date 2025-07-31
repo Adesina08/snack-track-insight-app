@@ -28,8 +28,7 @@ The Vite server proxies requests from `/api` to the backend running on port `400
 Ensure `npm start` is running in the project root so API requests succeed during development.
 ```
 
-To run the **backend** API server make sure `ffmpeg` is installed and then
-install the Node.js dependencies:
+To run the **backend** API server install the Node.js dependencies:
 
 ```sh
 npm install # from the project root
@@ -57,6 +56,8 @@ AZURE_AUDIO_CONTAINER=audio-logs
 AZURE_MEDIA_CONTAINER=media-logs
 AZURE_SPEECH_KEY=<your speech key>
 AZURE_SPEECH_REGION=<your speech region>
+AZURE_TEXT_ANALYTICS_ENDPOINT=<your text analytics endpoint>
+AZURE_TEXT_ANALYTICS_KEY=<your text analytics api key>
 ```
 
 `VITE_API_BASE_URL` is optional when the frontend and backend are served from the same domain. Set it to your backend URL when running the frontend locally against a remote API.
@@ -112,12 +113,16 @@ You can publish the frontend using **Azure Static Web Apps** and deploy the Expr
 
 Requests from the static site to `/api` are proxied to the backend using `frontend/staticwebapp.config.json`. Update this file with your backend domain so the frontend can communicate with the API once deployed. If the frontend and backend appear disconnected, verify that this file points to your deployed backend's URL.
 
-The `/api/transcribe` endpoint relies on `ffmpeg` and the
-`microsoft-cognitiveservices-speech-sdk` package. When
-`AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` are provided the server uses Azure
-Speech to Text to process uploaded audio. Ensure these dependencies are
-installed before deploying the backend. Without them the transcription step will
-fail and AI Capture will display an error.
+The `/api/transcribe` endpoint now sends uploaded audio directly to the Azure
+Speech Service. When `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` are provided
+the server forwards the file to Azure and returns the recognized text. If the
+request fails the server returns the detailed error message from Azure so you
+can diagnose configuration issues.
+
+The `/api/analyze` endpoint runs Azure Text Analytics on a block of text and
+returns its sentiment and key phrases. Provide
+`AZURE_TEXT_ANALYTICS_ENDPOINT` and `AZURE_TEXT_ANALYTICS_KEY` to enable this
+feature.
 
 ### Building a mobile app
 
