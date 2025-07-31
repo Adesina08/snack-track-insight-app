@@ -197,10 +197,18 @@ app.post('/api/analyze', async (req, res) => {
   try {
     const [sentimentResult] = await textAnalyticsClient.analyzeSentiment([text]);
     const [phrasesResult] = await textAnalyticsClient.extractKeyPhrases([text]);
+    const { positive, neutral, negative } = sentimentResult.confidenceScores;
+    const confidenceMap = {
+      positive,
+      neutral,
+      negative,
+    };
+    const confidence =
+      confidenceMap[sentimentResult.sentiment] ??
+      Math.max(positive, neutral, negative);
     res.json({
       sentiment: sentimentResult.sentiment,
-      confidence:
-        sentimentResult.confidenceScores[sentimentResult.sentiment.toLowerCase()],
+      confidence,
       categories: phrasesResult.keyPhrases,
     });
   } catch (err) {

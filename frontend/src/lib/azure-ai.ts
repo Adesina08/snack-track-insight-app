@@ -3,7 +3,7 @@ import { buildUrl } from './local-db';
 export interface AzureAIAnalysis {
   transcription?: string;
   detectedProducts?: string[];
-  sentiment?: 'positive' | 'negative' | 'neutral';
+  sentiment?: 'positive' | 'negative' | 'neutral' | 'mixed';
   confidence?: number;
   emotions?: string[];
   brands?: string[];
@@ -71,7 +71,7 @@ export class AzureAIService {
     onProgress?.(100);
     return {
       transcription,
-      sentiment: data.sentiment as 'positive' | 'negative' | 'neutral',
+      sentiment: data.sentiment as 'positive' | 'negative' | 'neutral' | 'mixed',
       confidence: data.confidence,
       categories: data.categories
     };
