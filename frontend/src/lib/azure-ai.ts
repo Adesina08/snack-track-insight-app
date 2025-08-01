@@ -21,29 +21,34 @@ export class AzureAIService {
     audioBlob: Blob,
     onProgress?: (progress: number) => void
   ): Promise<string> {
-    const formData = new FormData();
-    formData.append('audio', audioBlob);
+    const AZURE_SPEECH_KEY = import.meta.env.VITE_AZURE_SPEECH_KEY;
+    const AZURE_REGION = import.meta.env.VITE_AZURE_REGION;
 
-    const response = await fetch(buildUrl('/transcribe'), {
+    if (!AZURE_SPEECH_KEY || !AZURE_REGION) {
+      throw new Error('Azure Speech credentials not configured');
+    }
+
+    const url = `https://${AZURE_REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=en-NG`;
+
+    const response = await fetch(url, {
       method: 'POST',
-      body: formData,
+      headers: {
+        'Ocp-Apim-Subscription-Key': AZURE_SPEECH_KEY,
+        'Content-Type': audioBlob.type,
+        Accept: 'application/json'
+      },
+      body: audioBlob
     });
 
     if (!response.ok) {
-      let msg = 'Transcription failed';
-      try {
-        const err = await response.json();
-        msg = err.message || msg;
-      } catch {
-        // ignore JSON parse errors
-      }
-      console.error('Detailed transcription error:', msg);
-      throw new Error(msg);
+      const errorText = await response.text();
+      console.error('Azure Speech error:', errorText);
+      throw new Error('Azure Speech-to-Text failed');
     }
 
-    const data: { text: string } = await response.json();
+    const data = await response.json();
     onProgress?.(100);
-    return data.text;
+    return (data.DisplayText || data.NBest?.[0]?.Display || '').trim();
   }
 
   async analyzeConsumption(
