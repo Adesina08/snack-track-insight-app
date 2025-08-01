@@ -2,7 +2,11 @@
   "routes": [
     {
       "route": "/api/*",
-      "allowedMethods": ["GET", "POST", "OPTIONS"],
+      "methods": [
+        "get",
+        "post",
+        "options"
+      ],
       "rewrite": "https://snacksappbackendv2b-b0erbpa2dmh6brg0.southafricanorth-01.azurewebsites.net/api/:path*"
     }
   ],
