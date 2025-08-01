@@ -13,19 +13,23 @@ export interface AzureAIAnalysis {
 }
 
 export class AzureAIService {
+  private backendUrl: string;
+
   constructor() {
-    // Browser-compatible AI service for food consumption analysis
+    this.backendUrl = import.meta.env.VITE_BACKEND_URL;
+    if (!this.backendUrl) {
+      throw new Error('VITE_BACKEND_URL is not defined in the environment');
+    }
   }
 
   async transcribeAudio(
     audioBlob: Blob,
     onProgress?: (progress: number) => void
   ): Promise<string> {
-    // ✅ Use your own backend server's /api/transcribe route
     const formData = new FormData();
-    formData.append('audio', audioBlob, 'recording.wav'); // field name must be 'audio' to match server
+    formData.append('audio', audioBlob, 'recording.wav');
 
-    const response = await fetch('/api/transcribe', {
+    const response = await fetch(`${this.backendUrl}/api/transcribe`, {
       method: 'POST',
       body: formData
     });
@@ -46,7 +50,7 @@ export class AzureAIService {
     mediaType: 'audio' | 'video',
     onProgress?: (progress: number) => void
   ): Promise<AzureAIAnalysis> {
-    const response = await fetch(buildUrl('/analyze'), {
+    const response = await fetch(`${this.backendUrl}/api/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: transcription })
@@ -64,8 +68,14 @@ export class AzureAIService {
       throw new Error(msg);
     }
 
-    const data: { sentiment: string; confidence?: number; categories?: string[] } = await response.json();
+    const data: {
+      sentiment: string;
+      confidence?: number;
+      categories?: string[];
+    } = await response.json();
+
     onProgress?.(100);
+
     return {
       transcription,
       sentiment: data.sentiment as 'positive' | 'negative' | 'neutral' | 'mixed',
@@ -75,12 +85,12 @@ export class AzureAIService {
   }
 
   async analyzeImage(imageBlob: Blob): Promise<AzureAIAnalysis> {
-    // Simulated analysis result (you can replace with real Azure Computer Vision API logic)
+    // Stubbed method - replace with Azure Computer Vision API later
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
           detectedProducts: ['Coca-Cola', 'French Fries'],
-          brands: ['Coca-Cola', 'McDonald\'s'],
+          brands: ['Coca-Cola', "McDonald's"],
           categories: ['Beverages', 'Fast Food'],
           confidence: 0.85,
           estimatedSpend: '$12.50',
