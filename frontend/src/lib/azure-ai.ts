@@ -21,34 +21,24 @@ export class AzureAIService {
     audioBlob: Blob,
     onProgress?: (progress: number) => void
   ): Promise<string> {
-    const AZURE_SPEECH_KEY = import.meta.env.VITE_AZURE_SPEECH_KEY;
-    const AZURE_REGION = import.meta.env.VITE_AZURE_REGION;
+    // ✅ Use your own backend server's /api/transcribe route
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'recording.wav'); // field name must be 'audio' to match server
 
-    if (!AZURE_SPEECH_KEY || !AZURE_REGION) {
-      throw new Error('Azure Speech credentials not configured');
-    }
-
-    const url = `https://${AZURE_REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=en-NG`;
-
-    const response = await fetch(url, {
+    const response = await fetch('/api/transcribe', {
       method: 'POST',
-      headers: {
-        'Ocp-Apim-Subscription-Key': AZURE_SPEECH_KEY,
-        'Content-Type': audioBlob.type,
-        Accept: 'application/json'
-      },
-      body: audioBlob
+      body: formData
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Azure Speech error:', errorText);
-      throw new Error('Azure Speech-to-Text failed');
+      console.error('Transcription failed:', data.message || response.statusText);
+      throw new Error(data.message || 'Transcription failed');
     }
 
-    const data = await response.json();
     onProgress?.(100);
-    return (data.DisplayText || data.NBest?.[0]?.Display || '').trim();
+    return data.text?.trim() || '';
   }
 
   async analyzeConsumption(
@@ -85,9 +75,7 @@ export class AzureAIService {
   }
 
   async analyzeImage(imageBlob: Blob): Promise<AzureAIAnalysis> {
-    // In a real implementation, use Azure Computer Vision API
-    // For now, simulate analysis
-    
+    // Simulated analysis result (you can replace with real Azure Computer Vision API logic)
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
