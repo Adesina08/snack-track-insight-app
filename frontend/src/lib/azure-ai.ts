@@ -29,20 +29,38 @@ export class AzureAIService {
     const formData = new FormData();
     formData.append('audio', audioBlob, 'recording.wav');
 
-    const response = await fetch(`${this.backendUrl}/api/transcribe`, {
-      method: 'POST',
-      body: formData
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${this.backendUrl}/api/transcribe`, {
+        method: 'POST',
+        body: formData
+      });
+    } catch (err) {
+      console.error('Network or CORS error:', err);
+      throw new Error('Failed to connect to backend server');
+    }
 
-    const data = await response.json();
+    let data: any;
+    try {
+      data = await response.json();
+    } catch (err) {
+      console.error('Failed to parse JSON from transcription response');
+      throw new Error('Invalid response from server');
+    }
 
     if (!response.ok) {
       console.error('Transcription failed:', data.message || response.statusText);
       throw new Error(data.message || 'Transcription failed');
     }
 
+    const transcript = data.text?.trim();
+    if (!transcript) {
+      console.error('Empty transcription response');
+      throw new Error('No transcription text received');
+    }
+
     onProgress?.(100);
-    return data.text?.trim() || '';
+    return transcript;
   }
 
   async analyzeConsumption(
@@ -85,7 +103,7 @@ export class AzureAIService {
   }
 
   async analyzeImage(imageBlob: Blob): Promise<AzureAIAnalysis> {
-    // Stubbed method - replace with Azure Computer Vision API later
+    // Stubbed analysis - replace with Azure Vision API call later if needed
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
