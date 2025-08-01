@@ -17,6 +17,7 @@ import { azureAI, AzureAIAnalysis } from "@/lib/azure-ai";
 import { getLocalStorage } from "@/lib/local-storage";
 import { MediaCompressor } from "@/lib/media-compression";
 import { LocationService, LocationData } from "@/lib/location";
+import { convertToWav } from "@/lib/audio-utils";
 
 const LogConsumption = () => {
   const navigate = useNavigate();
@@ -81,17 +82,25 @@ const LogConsumption = () => {
       };
 
       recorder.onstop = async () => {
-        const mimeType = recordingType === 'video' ? 'video/webm' : 'audio/webm';
+        const isVideo = recordingType === 'video';
+        const mimeType = isVideo ? 'video/webm' : 'audio/webm';
         const blob = new Blob(chunks, { type: mimeType });
-        const file = new File([blob], `naija-meal-${Date.now()}.webm`, {
-          type: mimeType
-        });
-        
+
+        let file: File;
+        if (isVideo) {
+          file = new File([blob], `naija-meal-${Date.now()}.webm`, { type: mimeType });
+        } else {
+          const wavBlob = await convertToWav(blob);
+          file = new File([wavBlob], `naija-meal-${Date.now()}.wav`, {
+            type: 'audio/wav'
+          });
+        }
+
         setSelectedFile(file);
-        
+
         // Stop all tracks
         stream.getTracks().forEach(track => track.stop());
-        
+
         // Analyze with Azure AI
         await analyzeWithAzureAI(file);
       };

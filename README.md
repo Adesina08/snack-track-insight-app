@@ -43,6 +43,9 @@ Create a `.env` file in the project root for local development and define the fo
 
 VITE_JWT_SECRET=<your secret key>
 VITE_API_BASE_URL=<deployed backend URL>
+# Frontend access to Azure Speech
+VITE_AZURE_SPEECH_KEY=<your speech key>
+VITE_AZURE_REGION=<your speech region>
 # Use only the domain, not the `/api` path. The app will automatically
 # append `/api` when contacting the backend.
 CORS_ORIGIN=<allowed domains>
@@ -106,6 +109,8 @@ This project is built with:
 ### Logging meals
 
 On the log consumption page you can switch between **Manual Entry** and **AI Capture**. Manual entry only shows the meal form, while AI Capture also records audio or video which is transcribed using Azure Speech to Text when credentials are provided (otherwise Whisper is used).
+When `VITE_AZURE_SPEECH_KEY` and `VITE_AZURE_REGION` are set the browser uploads recordings directly to Azure, bypassing the `/api/transcribe` route.
+Audio recordings are saved as `.wav` for maximum compatibility with Azure Speech.
 
 ### Deploying to Azure
 
