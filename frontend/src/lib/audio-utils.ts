@@ -1,15 +1,32 @@
 export async function convertToWav(blob: Blob): Promise<Blob> {
+  const targetSampleRate = 16000;
   const audioContext = new AudioContext();
   const arrayBuffer = await blob.arrayBuffer();
   const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-  const wavBuffer = audioBufferToWav(audioBuffer);
+
+  const resampledBuffer = await downsampleBuffer(audioBuffer, targetSampleRate);
+  const wavBuffer = audioBufferToWav(resampledBuffer, targetSampleRate);
   await audioContext.close();
   return new Blob([wavBuffer], { type: 'audio/wav' });
 }
 
-function audioBufferToWav(buffer: AudioBuffer): ArrayBuffer {
+function downsampleBuffer(buffer: AudioBuffer, targetRate: number): AudioBuffer {
+  const offlineCtx = new OfflineAudioContext({
+    numberOfChannels: buffer.numberOfChannels,
+    length: Math.ceil(buffer.duration * targetRate),
+    sampleRate: targetRate,
+  });
+
+  const source = offlineCtx.createBufferSource();
+  source.buffer = buffer;
+  source.connect(offlineCtx.destination);
+  source.start(0);
+
+  return offlineCtx.startRendering();
+}
+
+function audioBufferToWav(buffer: AudioBuffer, sampleRate: number): ArrayBuffer {
   const numOfChan = buffer.numberOfChannels;
-  const sampleRate = buffer.sampleRate;
   const numFrames = buffer.length;
   const bufferLength = 44 + numFrames * numOfChan * 2;
   const arrayBuffer = new ArrayBuffer(bufferLength);
@@ -35,12 +52,12 @@ function audioBufferToWav(buffer: AudioBuffer): ArrayBuffer {
   writeString('WAVE');
   writeString('fmt ');
   writeUint32(16);
-  writeUint16(1);
+  writeUint16(1); // PCM
   writeUint16(numOfChan);
   writeUint32(sampleRate);
   writeUint32(sampleRate * numOfChan * 2);
   writeUint16(numOfChan * 2);
-  writeUint16(16);
+  writeUint16(16); // 16-bit
   writeString('data');
   writeUint32(numFrames * numOfChan * 2);
 
