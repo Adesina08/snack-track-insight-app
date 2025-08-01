@@ -22,13 +22,13 @@ export class AzureAIService {
     onProgress?: (progress: number) => void
   ): Promise<string> {
     const AZURE_SPEECH_KEY = import.meta.env.VITE_AZURE_SPEECH_KEY;
-    const AZURE_SPEECH_REGION = import.meta.env.VITE_AZURE_SPEECH_REGION;
+    const AZURE_REGION = import.meta.env.VITE_AZURE_REGION;
 
-    if (!AZURE_SPEECH_KEY || !AZURE_SPEECH_REGION) {
+    if (!AZURE_SPEECH_KEY || !AZURE_REGION) {
       throw new Error('Azure Speech credentials not configured');
     }
 
-    const url = `https://${AZURE_SPEECH_REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=en-NG`;
+    const url = `https://${AZURE_REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=en-NG`;
 
     const response = await fetch(url, {
       method: 'POST',
