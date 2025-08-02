@@ -31,7 +31,8 @@ export class AzureAIService {
 
     let response: Response;
     try {
-      response = await fetch(`${this.backendUrl}/api/transcribe`, {
+      const transcribeUrl = new URL('/api/transcribe', this.backendUrl).toString();
+      response = await fetch(transcribeUrl, {
         method: 'POST',
         body: formData
       });
