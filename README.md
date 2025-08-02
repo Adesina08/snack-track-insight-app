@@ -108,8 +108,8 @@ This project is built with:
 
 ### Logging meals
 
-On the log consumption page you can switch between **Manual Entry** and **AI Capture**. Manual entry only shows the meal form, while AI Capture also records audio or video which is transcribed using Azure Speech to Text when credentials are provided (otherwise Whisper is used).
-When `VITE_AZURE_SPEECH_KEY` and `VITE_AZURE_REGION` are set the browser uploads recordings directly to Azure, bypassing the `/api/transcribe` route.
+On the log consumption page you can switch between **Manual Entry** and **AI Capture**. Manual entry only shows the meal form, while AI Capture also records audio or video.
+The recorded audio is sent to the backend `/api/transcribe` endpoint, which uses the Azure Speech to Text service for transcription. The backend must be configured with `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` for this to work.
 Audio recordings are saved as `.wav` for maximum compatibility with Azure Speech.
 ### Deploying to Azure
 

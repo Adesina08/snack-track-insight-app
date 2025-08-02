@@ -142,7 +142,7 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
       method: 'POST',
       headers: {
         'Ocp-Apim-Subscription-Key': AZURE_SPEECH_KEY,
-        'Content-Type': req.file.mimetype,
+        'Content-Type': 'audio/wav; codecs=audio/pcm; samplerate=16000',
         Accept: 'application/json',
         'Transfer-Encoding': 'chunked',
       },
