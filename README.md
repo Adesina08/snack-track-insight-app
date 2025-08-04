@@ -43,9 +43,6 @@ Create a `.env` file in the project root for local development and define the fo
 
 VITE_JWT_SECRET=<your secret key>
 VITE_API_BASE_URL=<deployed backend URL>
-# Frontend access to Azure Speech
-VITE_AZURE_SPEECH_KEY=<your speech key>
-VITE_AZURE_REGION=<your speech region>
 # Use only the domain, not the `/api` path. The app will automatically
 # append `/api` when contacting the backend.
 CORS_ORIGIN=<allowed domains>
@@ -57,10 +54,7 @@ DB_NAME=snacktrack
 AZURE_STORAGE_CONNECTION_STRING=<your connection string>
 AZURE_AUDIO_CONTAINER=audio-logs
 AZURE_MEDIA_CONTAINER=media-logs
-AZURE_SPEECH_KEY=<your speech key>
-AZURE_SPEECH_REGION=<your speech region>
-AZURE_TEXT_ANALYTICS_ENDPOINT=<your text analytics endpoint>
-AZURE_TEXT_ANALYTICS_KEY=<your text analytics api key>
+HF_TOKEN=<your hugging face api token>
 ```
 
 `VITE_API_BASE_URL` is optional when the frontend and backend are served from the same domain. Set it to your backend URL when running the frontend locally against a remote API.
@@ -109,33 +103,19 @@ This project is built with:
 ### Logging meals
 
 On the log consumption page you can switch between **Manual Entry** and **AI Capture**. Manual entry only shows the meal form, while AI Capture also records audio or video.
-The recorded audio is sent to the backend `/api/transcribe` endpoint, which uses the Azure Speech to Text service for transcription. The backend must be configured with `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` for this to work.
-Audio recordings are saved as `.wav` for maximum compatibility with Azure Speech.
-### Deploying to Azure
+The recorded audio is sent to the backend `/api/transcribe` endpoint, which uses the Hugging Face Inference API with the Whisper model for transcription. The backend must be configured with an `HF_TOKEN` for this to work. You can generate a free token from your Hugging Face account settings.
+Audio recordings are saved as `.wav` for maximum compatibility.
+
 
 You can publish the frontend using **Azure Static Web Apps** and deploy the Express backend to **Azure Web App**. Configure your preferred CI/CD solution or deploy manually as needed.
 
 Requests from the static site to `/api` are proxied to the backend using `frontend/staticwebapp.config.json`. Update this file with your backend domain so the frontend can communicate with the API once deployed. If the frontend and backend appear disconnected, verify that this file points to your deployed backend's URL.
 
-The `/api/transcribe` endpoint now sends uploaded audio directly to the Azure
-Speech Service. When `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` are provided
-the server forwards the file to Azure and returns the recognized text. If the
-request fails the server returns the detailed error message from Azure so you
-can diagnose configuration issues.
 
-The `/api/analyze` endpoint runs Azure Text Analytics on a block of text and
-returns its sentiment and key phrases. Provide
-`AZURE_TEXT_ANALYTICS_ENDPOINT` and `AZURE_TEXT_ANALYTICS_KEY` to enable this
-feature.
+The `/api/analyze` endpoint uses the `natural` library to perform sentiment analysis and keyword extraction on a block of text. This runs locally on the backend and requires no external API keys.
 
 When transcription fails the server now returns the underlying error message in
-the response to help diagnose issues such as missing `ffmpeg` or invalid Azure
-credentials.
-
-The `/api/analyze` endpoint runs Azure Text Analytics on a block of text and
-returns its sentiment and key phrases. Provide
-`AZURE_TEXT_ANALYTICS_ENDPOINT` and `AZURE_TEXT_ANALYTICS_KEY` to enable this
-feature.
+the response to help diagnose issues such as missing `ffmpeg` or an invalid Hugging Face token.
 
 ### Building a mobile app
 
