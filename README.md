@@ -105,7 +105,7 @@ This project is built with:
 On the log consumption page you can switch between **Manual Entry** and **AI Capture**. Manual entry only shows the meal form, while AI Capture also records audio or video.
 The recorded audio is sent to the backend `/api/transcribe` endpoint, which uses the Hugging Face Inference API with the Whisper model for transcription. The backend must be configured with an `HF_TOKEN` for this to work. You can generate a free token from your Hugging Face account settings.
 Audio recordings are saved as `.wav` for maximum compatibility.
-### Deploying to Azure
+
 
 You can publish the frontend using **Azure Static Web Apps** and deploy the Express backend to **Azure Web App**. Configure your preferred CI/CD solution or deploy manually as needed.
 
