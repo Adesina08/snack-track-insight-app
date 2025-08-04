@@ -7,8 +7,8 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { BlobServiceClient } from '@azure/storage-blob';
-import { TextAnalyticsClient, AzureKeyCredential } from '@azure/ai-text-analytics';
 import { pool, initDb } from './db.js';
+import natural from 'natural';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Load .env only when not running on Azure. When deployed on Azure Web Apps the
@@ -36,14 +36,6 @@ const mediaContainer =
   blobServiceClient?.getContainerClient(
     process.env.AZURE_MEDIA_CONTAINER
   );
-
-const textAnalyticsClient =
-  process.env.AZURE_TEXT_ANALYTICS_ENDPOINT && process.env.AZURE_TEXT_ANALYTICS_KEY
-    ? new TextAnalyticsClient(
-        process.env.AZURE_TEXT_ANALYTICS_ENDPOINT,
-        new AzureKeyCredential(process.env.AZURE_TEXT_ANALYTICS_KEY)
-      )
-    : null;
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -131,33 +123,38 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
   );
 
   try {
-    const { AZURE_SPEECH_KEY, AZURE_SPEECH_REGION } = process.env;
-    if (!AZURE_SPEECH_KEY || !AZURE_SPEECH_REGION) {
-      throw new Error('Azure Speech credentials not provided');
+    const { HF_TOKEN } = process.env;
+    if (!HF_TOKEN) {
+      throw new Error('Hugging Face API token not provided');
     }
 
-    const url = `https://${AZURE_SPEECH_REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=en-US`;
+    const url = 'https://api-inference.huggingface.co/models/openai/whisper-large-v3';
     const audioBuffer = await fs.promises.readFile(req.file.path);
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Ocp-Apim-Subscription-Key': AZURE_SPEECH_KEY,
+        Authorization: `Bearer ${HF_TOKEN}`,
         'Content-Type': req.file.mimetype,
-        Accept: 'application/json',
-        'Transfer-Encoding': 'chunked',
       },
       body: audioBuffer,
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      throw new Error(errText || 'Azure speech transcription failed');
+      console.error('Hugging Face API Error:', errText);
+      throw new Error('Whisper transcription failed');
     }
 
     const data = await response.json();
     fs.unlink(req.file.path, () => {});
-    const text = data.DisplayText || data.NBest?.[0]?.Display || '';
-    res.json({ text: text.trim() });
+
+    if (!data.text) {
+      console.error('Invalid response from Whisper API:', data);
+      throw new Error('No transcription text received');
+    }
+
+    res.json({ text: data.text.trim() });
   } catch (err) {
     console.error('Transcription failed', err);
     fs.unlink(req.file.path, () => {});
@@ -169,25 +166,34 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
 app.post('/api/analyze', async (req, res) => {
   const { text } = req.body;
   if (!text) return res.status(400).json({ message: 'No text provided' });
-  if (!textAnalyticsClient) {
-    return res.status(500).json({ message: 'Text analytics not configured' });
-  }
+
   try {
-    const [sentimentResult] = await textAnalyticsClient.analyzeSentiment([text]);
-    const [phrasesResult] = await textAnalyticsClient.extractKeyPhrases([text]);
-    const { positive, neutral, negative } = sentimentResult.confidenceScores;
-    const confidenceMap = {
-      positive,
-      neutral,
-      negative,
-    };
-    const confidence =
-      confidenceMap[sentimentResult.sentiment] ??
-      Math.max(positive, neutral, negative);
+    const tokenizer = new natural.WordTokenizer();
+    const tokens = tokenizer.tokenize(text);
+
+    const analyzer = new natural.SentimentAnalyzer('English', natural.PorterStemmer, 'afinn');
+    const sentimentScore = analyzer.getSentiment(tokens);
+
+    let sentiment = 'neutral';
+    if (sentimentScore > 0.1) {
+      sentiment = 'positive';
+    } else if (sentimentScore < -0.1) {
+      sentiment = 'negative';
+    }
+
+    // Use TF-IDF to extract keywords for categories
+    const TfIdf = natural.TfIdf;
+    const tfidf = new TfIdf();
+    tfidf.addDocument(text);
+
+    const categories = tfidf.listTerms(0 /* document index */)
+      .slice(0, 5) // Take the top 5 keywords
+      .map(item => item.term);
+
     res.json({
-      sentiment: sentimentResult.sentiment,
-      confidence,
-      categories: phrasesResult.keyPhrases,
+      sentiment,
+      confidence: Math.abs(sentimentScore),
+      categories,
     });
   } catch (err) {
     console.error('Text analysis failed', err);
