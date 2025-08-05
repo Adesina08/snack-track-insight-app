@@ -184,7 +184,7 @@ const Login = () => {
                     <div className="w-full border-t border-blue-300"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 text-gray-600">
+                    <span className="bg-card px-2 text-gray-600">
                       Or continue with
                     </span>
                   </div>

@@ -148,7 +148,7 @@ const Navigation = () => {
 
       {/* Mobile Bottom Navigation */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 glass-card border-t border-blue-200/50 z-50">
-        <div className="grid grid-cols-5 gap-1 px-2 py-2">
+        <div className={`grid ${navItems.length === 1 ? 'grid-cols-1' : 'grid-cols-4'} gap-1 px-2 py-2`}>
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
