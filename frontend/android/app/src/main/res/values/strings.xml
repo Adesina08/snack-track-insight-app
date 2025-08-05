@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">snack-track-insight-app</string>
+    <string name="title_activity_main">snack-track-insight-app</string>
+    <string name="package_name">com.snacks.track</string>
+    <string name="custom_url_scheme">com.snacks.track</string>
+</resources>
