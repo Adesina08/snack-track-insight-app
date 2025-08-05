@@ -2,7 +2,7 @@
   "routes": [
     {
       "route": "/api/*",
-      "forward": "https://snacksappbackendv2b-b0erbpa2dmh6brg0.southafricanorth-01.azurewebsites.net/api/:path*"
+      "rewrite": "https://your-backend.azurewebsites.net/api/:path*"
     }
   ],
   "globalHeaders": {
@@ -10,3 +10,4 @@
     "Access-Control-Allow-Headers": "*"
   }
 }
+
