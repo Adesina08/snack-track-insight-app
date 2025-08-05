@@ -1,24 +1,54 @@
 # Backend API
 
-This directory contains a minimal Express server used by the Snack Track Insight application.
+This directory contains a minimal Express server for the Snack Track Insight application.
 
 ## Setup
 
+From the project root directory:
+
 ```sh
-cd backend
 npm install
 npm start
 ```
 
-The server transcribes uploaded audio using Azure Speech to Text, so make sure
-`AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` are configured in your environment.
+The server will start on the port specified by the `PORT` environment variable (defaults to `4000`).
 
-The server listens on `PORT` (defaults to `4000`) and uses the `DB_*` environment variables to connect to PostgreSQL. It exposes a simple health endpoint at `/api/health` that returns `{ status: 'ok' }` and an informational message at `/api`.
-During development the frontend's Vite server proxies `/api` requests to this port, so make sure the backend is running before interacting with the app.
+## Transcription Service
 
-### Environment variables
+The backend uses the Hugging Face Inference API for audio transcription. Specifically, it sends audio files to a speech-to-text model and receives the transcribed text.
 
-Create a `.env` file in this directory for local development and define at least the following variables. In production set them as environment variables (e.g. Azure App Settings):
+To use this service, you need a Hugging Face API token.
+
+### Getting a Hugging Face API Token
+
+1.  Create a free account on [Hugging Face](https://huggingface.co/join).
+2.  Navigate to your profile settings: `https://huggingface.co/settings/tokens`.
+3.  Generate a new **User Access Token**. A `read`-only token is sufficient for this service.
+4.  Copy the token. You will use this for the `HF_TOKEN` environment variable.
+
+## Environment Variables
+
+For local development, create a `.env` file in the project root. In a production environment (like Azure App Service), set these as environment variables.
+
+### Required Variables
+
+-   `DB_HOST`: The hostname of your PostgreSQL database.
+-   `DB_PORT`: The port of your PostgreSQL database.
+-   `DB_USER`: The username for your PostgreSQL database.
+-   `DB_PASSWORD`: The password for your PostgreSQL database.
+-   `DB_NAME`: The name of your PostgreSQL database.
+-   `HF_TOKEN`: Your Hugging Face API token.
+
+### Optional Variables
+
+-   `PORT`: The port for the backend server to listen on (defaults to `4000`).
+-   `HF_MODEL`: The Hugging Face model to use for transcription (defaults to `openai/whisper-large-v3`). You can specify any other compatible model.
+-   `AZURE_STORAGE_CONNECTION_STRING`: If you want to store uploaded files in Azure Blob Storage, provide the connection string here.
+-   `AZURE_AUDIO_CONTAINER`: The name of the Azure Blob Storage container for audio files.
+-   `AZURE_MEDIA_CONTAINER`: The name of the Azure Blob Storage container for media files.
+-   `CORS_ORIGIN`: A comma-separated list of allowed origins for CORS requests.
+
+Example `.env` file:
 
 ```env
 DB_HOST=localhost
@@ -27,9 +57,8 @@ DB_USER=snackuser
 DB_PASSWORD=snackpass
 DB_NAME=snacktrack
 PORT=4000
+HF_TOKEN=your_hugging_face_token_here
+# HF_MODEL=openai/whisper-base
 ```
 
-If a `.env` file is present these values are loaded with `dotenv` during local development. When `WEBSITE_INSTANCE_ID` is defined (the case on Azure Web Apps) the server skips loading `.env` files and relies solely on environment variables provided by the platform.
-When connecting to a hosted database (e.g. Render or Heroku), provide the host, port, username and password from your provider. TLS is automatically enabled for any host that is not `localhost`.
-
-Future API routes should be added to `server.js`.
+The server automatically loads variables from the `.env` file during local development. When deployed to Azure, it will use the environment variables configured in the App Settings.
