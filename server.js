@@ -128,7 +128,8 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
       throw new Error('Hugging Face API token not provided');
     }
 
-    const url = 'https://api-inference.huggingface.co/models/openai/whisper-large-v3';
+    const model = process.env.HF_MODEL || 'openai/whisper-large-v3';
+    const url = `https://api-inference.huggingface.co/models/${model}`;
     const audioBuffer = await fs.promises.readFile(req.file.path);
 
     const response = await fetch(url, {
