@@ -54,7 +54,10 @@ DB_NAME=snacktrack
 AZURE_STORAGE_CONNECTION_STRING=<your connection string>
 AZURE_AUDIO_CONTAINER=audio-logs
 AZURE_MEDIA_CONTAINER=media-logs
-HF_TOKEN=<your hugging face api token>
+AZURE_SPEECH_KEY=<your speech key>
+AZURE_SPEECH_REGION=<your speech region>
+AZURE_LANGUAGE_KEY=<your language key>
+AZURE_LANGUAGE_ENDPOINT=<your language endpoint>
 ```
 
 `VITE_API_BASE_URL` is optional when the frontend and backend are served from the same domain. Set it to your backend URL when running the frontend locally against a remote API.
@@ -103,7 +106,7 @@ This project is built with:
 ### Logging meals
 
 On the log consumption page you can switch between **Manual Entry** and **AI Capture**. Manual entry only shows the meal form, while AI Capture also records audio or video.
-The recorded audio is sent to the backend `/api/transcribe` endpoint, which uses the Hugging Face Inference API with the Whisper model for transcription. The backend must be configured with an `HF_TOKEN` for this to work. You can generate a free token from your Hugging Face account settings.
+The recorded audio is sent to the backend `/api/transcribe` endpoint, which uses **Azure Speech Services** for transcription. The `/api/analyze` endpoint relies on **Azure AI Text Analytics** to determine sentiment and key phrases from the transcription.
 Audio recordings are saved as `.wav` for maximum compatibility.
 
 
@@ -112,10 +115,8 @@ You can publish the frontend using **Azure Static Web Apps** and deploy the Expr
 Requests from the static site to `/api` are proxied to the backend using `frontend/staticwebapp.config.json`. Update this file with your backend domain so the frontend can communicate with the API once deployed. If the frontend and backend appear disconnected, verify that this file points to your deployed backend's URL.
 
 
-The `/api/analyze` endpoint uses the `natural` library to perform sentiment analysis and keyword extraction on a block of text. This runs locally on the backend and requires no external API keys.
-
 When transcription fails the server now returns the underlying error message in
-the response to help diagnose issues such as missing `ffmpeg` or an invalid Hugging Face token.
+the response to help diagnose issues such as missing `ffmpeg` or misconfigured Azure credentials.
 
 ### Building a mobile app
 

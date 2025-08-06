@@ -13,18 +13,11 @@ npm start
 
 The server will start on the port specified by the `PORT` environment variable (defaults to `4000`).
 
-## Transcription Service
+## Transcription and Analysis
 
-The backend uses the Hugging Face Inference API for audio transcription. Specifically, it sends audio files to a speech-to-text model and receives the transcribed text.
-
-To use this service, you need a Hugging Face API token.
-
-### Getting a Hugging Face API Token
-
-1.  Create a free account on [Hugging Face](https://huggingface.co/join).
-2.  Navigate to your profile settings: `https://huggingface.co/settings/tokens`.
-3.  Generate a new **User Access Token**. A `read`-only token is sufficient for this service.
-4.  Copy the token. You will use this for the `HF_TOKEN` environment variable.
+The backend uses **Azure Speech Services** to convert uploaded audio into text and **Azure AI Text Analytics** to evaluate the
+transcription for sentiment and key phrases. Create these resources in the Azure Portal and provide their credentials via
+environment variables as shown below.
 
 ## Environment Variables
 
@@ -37,12 +30,14 @@ For local development, create a `.env` file in the project root. In a production
 -   `DB_USER`: The username for your PostgreSQL database.
 -   `DB_PASSWORD`: The password for your PostgreSQL database.
 -   `DB_NAME`: The name of your PostgreSQL database.
--   `HF_TOKEN`: Your Hugging Face API token.
+-   `AZURE_SPEECH_KEY`: Key for your Azure Speech resource.
+-   `AZURE_SPEECH_REGION`: Region for your Azure Speech resource.
+-   `AZURE_LANGUAGE_KEY`: Key for your Azure AI Language resource.
+-   `AZURE_LANGUAGE_ENDPOINT`: Endpoint URL for your Azure AI Language resource.
 
 ### Optional Variables
 
 -   `PORT`: The port for the backend server to listen on (defaults to `4000`).
--   `HF_MODEL`: The Hugging Face model to use for transcription (defaults to `openai/whisper-large-v3`). You can specify any other compatible model.
 -   `AZURE_STORAGE_CONNECTION_STRING`: If you want to store uploaded files in Azure Blob Storage, provide the connection string here.
 -   `AZURE_AUDIO_CONTAINER`: The name of the Azure Blob Storage container for audio files.
 -   `AZURE_MEDIA_CONTAINER`: The name of the Azure Blob Storage container for media files.
@@ -57,8 +52,10 @@ DB_USER=snackuser
 DB_PASSWORD=snackpass
 DB_NAME=snacktrack
 PORT=4000
-HF_TOKEN=your_hugging_face_token_here
-# HF_MODEL=openai/whisper-base
+AZURE_SPEECH_KEY=your_speech_key
+AZURE_SPEECH_REGION=your_speech_region
+AZURE_LANGUAGE_KEY=your_language_key
+AZURE_LANGUAGE_ENDPOINT=https://your-language-resource.cognitiveservices.azure.com/
 ```
 
 The server automatically loads variables from the `.env` file during local development. When deployed to Azure, it will use the environment variables configured in the App Settings.
