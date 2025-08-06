@@ -19,6 +19,13 @@ The backend uses **Azure Speech Services** to convert uploaded audio into text a
 transcription for sentiment and key phrases. Create these resources in the Azure Portal and provide their credentials via
 environment variables as shown below.
 
+The server exposes two routes for this workflow:
+
+- `POST /api/transcribe` – accepts an audio file and returns the transcript using Azure Speech Services. Requires `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION`.
+- `POST /api/analyze` – accepts raw text and returns sentiment and key phrases from Azure AI Text Analytics. Requires `AZURE_LANGUAGE_KEY` and `AZURE_LANGUAGE_ENDPOINT`.
+
+Hugging Face Whisper and the local `natural` package are no longer used, so no `HF_TOKEN` is needed. Without valid Azure credentials calls to these endpoints will fail, preventing local testing unless the Azure resources exist.
+
 ## Environment Variables
 
 For local development, create a `.env` file in the project root. In a production environment (like Azure App Service), set these as environment variables.

@@ -54,6 +54,7 @@ const textClient = process.env.AZURE_LANGUAGE_KEY && process.env.AZURE_LANGUAGE_
   : null;
 
 const app = express();
+app.use(express.json());
 const PORT = process.env.PORT || 4000;
 const uploadsDir = path.join(process.cwd(), 'uploads');
 fs.mkdirSync(uploadsDir, { recursive: true });
@@ -89,7 +90,6 @@ const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
   : '*';
 app.use(cors({ origin: allowedOrigins }));
-app.use(express.json());
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.get('/', (_req, res) => {

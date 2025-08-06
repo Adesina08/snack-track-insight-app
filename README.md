@@ -69,6 +69,8 @@ The app requires `VITE_JWT_SECRET` for authentication tokens. The `DB_*` variabl
 
 If `AZURE_STORAGE_CONNECTION_STRING` is provided, uploaded audio and video files are automatically pushed to the specified storage containers (`AZURE_AUDIO_CONTAINER` for audio-only logs and `AZURE_MEDIA_CONTAINER` for video or mixed media). If these variables are not set the files are saved locally in `uploads`.
 
+The `/api/transcribe` and `/api/analyze` endpoints require valid `AZURE_SPEECH_*` and `AZURE_LANGUAGE_*` variables. Without access to those Azure resources the routes will respond with errors, so their behavior cannot be tested locally.
+
 ### Local database
 
 Data is persisted in PostgreSQL. The backend will automatically create the necessary tables and seed a few rewards on first run. Ensure a local PostgreSQL server is running and the `DB_*` variables are set appropriately.
@@ -106,8 +108,12 @@ This project is built with:
 ### Logging meals
 
 On the log consumption page you can switch between **Manual Entry** and **AI Capture**. Manual entry only shows the meal form, while AI Capture also records audio or video.
-The recorded audio is sent to the backend `/api/transcribe` endpoint, which uses **Azure Speech Services** for transcription. The `/api/analyze` endpoint relies on **Azure AI Text Analytics** to determine sentiment and key phrases from the transcription.
+
+The recorded audio is sent to the backend `/api/transcribe` endpoint, which uses **Azure Speech Services** for transcription instead of the previous Hugging Face Whisper integration. The `/api/analyze` endpoint relies on **Azure AI Text Analytics**—not the local `natural` package—to determine sentiment and key phrases from the transcription.
+
 Audio recordings are saved as `.wav` for maximum compatibility.
+
+Without valid Azure credentials these endpoints return `500` errors, so the AI Capture feature cannot be tested locally.
 
 
 You can publish the frontend using **Azure Static Web Apps** and deploy the Express backend to **Azure Web App**. Configure your preferred CI/CD solution or deploy manually as needed.
