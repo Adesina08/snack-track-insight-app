@@ -56,7 +56,10 @@ Next, we'll deploy the Node.js backend.
         -   `DB_USER`: Your PostgreSQL admin username.
         -   `DB_PASSWORD`: Your PostgreSQL admin password.
         -   `DB_NAME`: `snacktrack`.
-        -   `HF_TOKEN`: Your Hugging Face API token.
+        -   `AZURE_SPEECH_KEY`: Your Azure Speech resource key.
+        -   `AZURE_SPEECH_REGION`: Region of your Azure Speech resource.
+        -   `AZURE_LANGUAGE_KEY`: Your Azure AI Language resource key.
+        -   `AZURE_LANGUAGE_ENDPOINT`: Endpoint of your Azure AI Language resource.
         -   `AZURE_STORAGE_CONNECTION_STRING` (Optional): Your Azure Storage connection string.
         -   `AZURE_AUDIO_CONTAINER` (Optional): `audio-logs`.
         -   `AZURE_MEDIA_CONTAINER` (Optional): `media-logs`.
