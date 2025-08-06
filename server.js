@@ -8,7 +8,8 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { pool, initDb } from './db.js';
-import natural from 'natural';
+import sdk from 'microsoft-cognitiveservices-speech-sdk';
+import { TextAnalyticsClient, AzureKeyCredential } from '@azure/ai-text-analytics';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Load .env only when not running on Azure. When deployed on Azure Web Apps the
@@ -37,7 +38,23 @@ const mediaContainer =
     process.env.AZURE_MEDIA_CONTAINER
   );
 
+const speechConfig = process.env.AZURE_SPEECH_KEY && process.env.AZURE_SPEECH_REGION
+  ? sdk.SpeechConfig.fromSubscription(
+      process.env.AZURE_SPEECH_KEY,
+      process.env.AZURE_SPEECH_REGION
+    )
+  : null;
+speechConfig && (speechConfig.speechRecognitionLanguage = 'en-US');
+
+const textClient = process.env.AZURE_LANGUAGE_KEY && process.env.AZURE_LANGUAGE_ENDPOINT
+  ? new TextAnalyticsClient(
+      process.env.AZURE_LANGUAGE_ENDPOINT,
+      new AzureKeyCredential(process.env.AZURE_LANGUAGE_KEY)
+    )
+  : null;
+
 const app = express();
+app.use(express.json());
 const PORT = process.env.PORT || 4000;
 const uploadsDir = path.join(process.cwd(), 'uploads');
 fs.mkdirSync(uploadsDir, { recursive: true });
@@ -73,7 +90,6 @@ const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
   : '*';
 app.use(cors({ origin: allowedOrigins }));
-app.use(express.json());
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.get('/', (_req, res) => {
@@ -123,39 +139,33 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
   );
 
   try {
-    const { HF_TOKEN } = process.env;
-    if (!HF_TOKEN) {
-      throw new Error('Hugging Face API token not provided');
+    if (!speechConfig) {
+      throw new Error('Azure Speech Service not configured');
     }
 
-    const model = process.env.HF_MODEL || 'openai/whisper-large-v3';
-    const url = `https://api-inference.huggingface.co/models/${model}`;
-    const audioBuffer = await fs.promises.readFile(req.file.path);
+    const audioConfig = sdk.AudioConfig.fromFileInput(req.file.path);
+    const recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${HF_TOKEN}`,
-        'Content-Type': req.file.mimetype,
-      },
-      body: audioBuffer,
+    const text = await new Promise((resolve, reject) => {
+      recognizer.recognizeOnceAsync(
+        (result) => {
+          recognizer.close();
+          if (result.reason === sdk.ResultReason.RecognizedSpeech) {
+            resolve(result.text);
+          } else {
+            reject(result.errorDetails);
+          }
+        },
+        (err) => {
+          recognizer.close();
+          reject(err);
+        },
+      );
     });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('Hugging Face API Error:', errText);
-      throw new Error('Whisper transcription failed');
-    }
-
-    const data = await response.json();
     fs.unlink(req.file.path, () => {});
 
-    if (!data.text) {
-      console.error('Invalid response from Whisper API:', data);
-      throw new Error('No transcription text received');
-    }
-
-    res.json({ text: data.text.trim() });
+    res.json({ text: text.trim() });
   } catch (err) {
     console.error('Transcription failed', err);
     fs.unlink(req.file.path, () => {});
@@ -169,32 +179,20 @@ app.post('/api/analyze', async (req, res) => {
   if (!text) return res.status(400).json({ message: 'No text provided' });
 
   try {
-    const tokenizer = new natural.WordTokenizer();
-    const tokens = tokenizer.tokenize(text);
-
-    const analyzer = new natural.SentimentAnalyzer('English', natural.PorterStemmer, 'afinn');
-    const sentimentScore = analyzer.getSentiment(tokens);
-
-    let sentiment = 'neutral';
-    if (sentimentScore > 0.1) {
-      sentiment = 'positive';
-    } else if (sentimentScore < -0.1) {
-      sentiment = 'negative';
+    if (!textClient) {
+      throw new Error('Azure Text Analytics not configured');
     }
 
-    // Use TF-IDF to extract keywords for categories
-    const TfIdf = natural.TfIdf;
-    const tfidf = new TfIdf();
-    tfidf.addDocument(text);
+    const [sentimentResult] = await textClient.analyzeSentiment([text]);
+    const sentiment = sentimentResult.sentiment;
+    const confidence = sentimentResult.confidenceScores[sentiment];
 
-    const categories = tfidf.listTerms(0 /* document index */)
-      .slice(0, 5) // Take the top 5 keywords
-      .map(item => item.term);
+    const [keyResult] = await textClient.extractKeyPhrases([text]);
 
     res.json({
       sentiment,
-      confidence: Math.abs(sentimentScore),
-      categories,
+      confidence,
+      categories: keyResult.keyPhrases,
     });
   } catch (err) {
     console.error('Text analysis failed', err);
