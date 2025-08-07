@@ -11,7 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // (detected via the WEBSITE_INSTANCE_ID variable). Azure injects configuration
 // directly into process.env so loading a file could override those values.
 if (!process.env.WEBSITE_INSTANCE_ID) {
-  const envPath = path.join(__dirname, '.env');
+  const envPath = path.join(__dirname, '..', '.env');
   if (fs.existsSync(envPath)) {
     dotenv.config({ path: envPath });
   } else {
@@ -95,3 +95,16 @@ export async function initDb() {
     );
   }
 }
+
+let dbReady = true;
+try {
+  await initDb();
+} catch (err) {
+  console.error(
+    'Failed to connect to the database. Ensure PostgreSQL is running and DB_* variables are correct.',
+  );
+  console.error(err);
+  dbReady = false;
+}
+
+export { dbReady };
