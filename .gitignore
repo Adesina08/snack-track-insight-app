@@ -11,8 +11,6 @@ node_modules
 dist
 dist-ssr
 *.local
-package-lock.json
-bun.lock
 
 # Editor directories and files
 .vscode/*
@@ -24,12 +22,3 @@ bun.lock
 *.njsproj
 *.sln
 *.sw?
-bun.lock
-package-lock.json
-frontend/package-lock.json
-.env
-
-# Backend artifacts
-.venv/
-uploads/
-push-tokens.json
