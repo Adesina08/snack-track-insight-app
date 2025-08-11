@@ -1,5 +1,5 @@
 
-import { User } from '@/types/api';
+import { dbOperations, User } from './database';
 
 const JWT_SECRET = import.meta.env.VITE_JWT_SECRET || 'your-jwt-secret-key';
 
@@ -101,7 +101,7 @@ export const authUtils = {
     const payload = {
       userId: user.id,
       email: user.email,
-      isAdmin: user.email === 'admin@inicio-insights.com', // Admin check
+      isAdmin: user.email === 'admin@naijasnacktrack.com', // Admin check
       exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
     };
     
@@ -109,7 +109,7 @@ export const authUtils = {
   },
 
   isAdminUser(user: User): boolean {
-    return user.email === 'admin@inicio-insights.com';
+    return user.email === 'admin@naijasnacktrack.com';
   },
 
   async verifyToken(token: string): Promise<AuthTokenPayload | null> {
@@ -153,15 +153,7 @@ export const authUtils = {
     }
 
     try {
-      // For now, return a mock user. In a real app, fetch from API
-      return {
-        id: payload.userId,
-        email: payload.email,
-        firstName: 'User',
-        lastName: 'Name',
-        createdAt: new Date().toISOString(),
-        points: 0
-      };
+      return await dbOperations.getUserByEmail(payload.email);
     } catch (error) {
       this.removeAuthToken();
       return null;

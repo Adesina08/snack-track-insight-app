@@ -11,9 +11,8 @@ import { User, Mail, Phone, MapPin, Bell, Camera, Star, TrendingUp } from "lucid
 import { toast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import { authUtils } from "@/lib/auth";
-import { User as UserType } from "@/types/api";
+import { User as UserType } from "@/lib/database";
 import { NotificationService, NotificationPreferences } from "@/lib/notifications";
-import { apiClient } from "@/lib/api-client";
 
 const Profile = () => {
   const [user, setUser] = useState<UserType | null>(null);
@@ -35,7 +34,6 @@ const Profile = () => {
   useEffect(() => {
     loadUserData();
     loadNotificationPreferences();
-    loadUserStats();
   }, []);
 
   const loadUserData = async () => {
@@ -59,72 +57,6 @@ const Profile = () => {
   const loadNotificationPreferences = () => {
     const prefs = NotificationService.loadPreferences();
     setNotifications(prefs);
-  };
-
-  const loadUserStats = async () => {
-    try {
-      const currentUser = await authUtils.getCurrentUser();
-      if (currentUser) {
-        // Load user's consumption logs to calculate stats
-        const logs = await apiClient.getUserConsumptionLogs(currentUser.id);
-        
-        // Calculate streak
-        const streak = calculateStreak(logs);
-        
-        // Update stats
-        setUserStats([
-          { label: "Total Points", value: (currentUser.points || 0).toLocaleString(), icon: Star, color: "text-primary" },
-          { label: "Total Logs", value: logs.length.toString(), icon: TrendingUp, color: "text-blue-600" },
-          { label: "Current Streak", value: `${streak} days`, icon: TrendingUp, color: "text-blue-600" },
-          { label: "Rank", value: "#-", icon: Star, color: "text-purple-600" }
-        ]);
-
-        // Set recent activity from logs
-        const recentLogs = logs.slice(0, 4).map(log => ({
-          action: `Logged ${log.product}`,
-          time: formatTimeAgo(log.createdAt),
-          points: `+${log.points}`
-        }));
-        setRecentActivity(recentLogs);
-      }
-    } catch (error) {
-      console.error('Error loading user stats:', error);
-    }
-  };
-
-  const calculateStreak = (logs: any[]) => {
-    if (logs.length === 0) return 0;
-    
-    const sortedLogs = logs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    let streak = 0;
-    let currentDate = new Date();
-    
-    for (const log of sortedLogs) {
-      const logDate = new Date(log.createdAt);
-      const daysDiff = Math.floor((currentDate.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (daysDiff <= streak + 1) {
-        streak++;
-        currentDate = logDate;
-      } else {
-        break;
-      }
-    }
-    
-    return streak;
-  };
-
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffHours < 1) return 'Just now';
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    if (diffDays === 1) return 'Yesterday';
-    return `${diffDays} days ago`;
   };
 
   const handleSaveProfile = async () => {
@@ -175,14 +107,19 @@ const Profile = () => {
     });
   };
 
-  const [userStats, setUserStats] = useState([
-    { label: "Total Points", value: "0", icon: Star, color: "text-primary" },
-    { label: "Total Logs", value: "0", icon: TrendingUp, color: "text-blue-600" },
-    { label: "Current Streak", value: "0 days", icon: TrendingUp, color: "text-blue-600" },
-    { label: "Rank", value: "#-", icon: Star, color: "text-purple-600" }
-  ]);
+  const userStats = [
+    { label: "Total Points", value: "1,247", icon: Star, color: "text-primary" },
+    { label: "Total Logs", value: "89", icon: TrendingUp, color: "text-blue-600" },
+    { label: "Current Streak", value: "7 days", icon: TrendingUp, color: "text-blue-600" },
+    { label: "Rank", value: "#24", icon: Star, color: "text-purple-600" }
+  ];
 
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const recentActivity = [
+    { action: "Logged Jollof Rice", time: "2 hours ago", points: "+15" },
+    { action: "Redeemed ₦1,000 Airtime", time: "1 day ago", points: "-500" },
+    { action: "Logged Suya", time: "2 days ago", points: "+10" },
+    { action: "Achieved 'Naija Foodie'", time: "3 days ago", points: "+50" }
+  ];
 
   return (
     <div className="min-h-screen gradient-secondary pb-20 lg:pb-0">
@@ -399,27 +336,17 @@ const Profile = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {recentActivity.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <div className="w-16 h-16 gradient-primary rounded-lg flex items-center justify-center mx-auto mb-4 opacity-50">
-                          <Star className="h-8 w-8 text-white" />
+                    {recentActivity.map((activity, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 glass-effect rounded-lg">
+                        <div>
+                          <p className="font-medium text-foreground">{activity.action}</p>
+                          <p className="text-sm text-muted-foreground">{activity.time}</p>
                         </div>
-                        <p>No recent activity</p>
-                        <p className="text-sm">Start logging meals to see your activity here!</p>
+                        <Badge variant={activity.points.startsWith('+') ? "default" : "secondary"}>
+                          {activity.points} pts
+                        </Badge>
                       </div>
-                    ) : (
-                      recentActivity.map((activity, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 glass-effect rounded-lg">
-                          <div>
-                            <p className="font-medium text-foreground">{activity.action}</p>
-                            <p className="text-sm text-muted-foreground">{activity.time}</p>
-                          </div>
-                          <Badge variant={activity.points.startsWith('+') ? "default" : "secondary"}>
-                            {activity.points} pts
-                          </Badge>
-                        </div>
-                      ))
-                    )}
+                    ))}
                   </div>
                 </CardContent>
               </Card>

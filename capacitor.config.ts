@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.inicio.7ce6c920304f4ec8857aec9a6e58b3dc',
+  appId: 'app.lovable.7ce6c920304f4ec8857aec9a6e58b3dc',
   appName: 'snack-track-insight-app',
   webDir: 'dist',
   server: {

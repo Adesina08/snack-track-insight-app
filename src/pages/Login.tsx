@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
+import { dbOperations } from "@/lib/database";
 import { authUtils } from "@/lib/auth";
 
 const Login = () => {
@@ -25,26 +25,44 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      setIsLoading(true);
+      // Get user from database
+      const user = await dbOperations.getUserByEmail(formData.email);
       
-      const response = await apiClient.login(formData.email, formData.password);
-      
-      if (response.user) {
-        // Generate JWT token
-        const token = await authUtils.generateToken(response.user);
-        authUtils.setAuthToken(token);
-
+      if (!user) {
         toast({
-          title: "Welcome back!",
-          description: "You have successfully logged in to SnackTrack.",
+          title: "Authentication failed",
+          description: "Invalid email or password.",
+          variant: "destructive",
         });
+        return;
+      }
 
-        // Navigate based on user type
-        if (authUtils.isAdminUser(response.user)) {
-          navigate("/admin");
-        } else {
-          navigate("/dashboard");
-        }
+      // Verify password (in real app, compare with hashed password)
+      const isValidPassword = await authUtils.verifyPassword(formData.password, user.passwordHash || 'demo-hash');
+      
+      if (!isValidPassword) {
+        toast({
+          title: "Authentication failed",
+          description: "Invalid email or password.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Generate JWT token
+      const token = await authUtils.generateToken(user);
+      authUtils.setAuthToken(token);
+
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully logged in to SnackTrack.",
+      });
+      
+      // Navigate based on user type
+      if (authUtils.isAdminUser(user)) {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
       }
     } catch (error) {
       console.error('Login error:', error);

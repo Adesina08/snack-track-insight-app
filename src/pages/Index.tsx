@@ -12,7 +12,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 nigeria-accent rounded-full"></div>
-            <h1 className="text-2xl font-bold text-gradient">SnacksTrack</h1>
+            <h1 className="text-2xl font-bold text-gradient">NaijaSnack</h1>
           </div>
           <div className="flex space-x-3">
             <Link to="/login">
@@ -33,10 +33,10 @@ const Index = () => {
       <section className="container mx-auto px-4 py-16 text-center">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-5xl font-bold text-gray-800 mb-6 leading-tight">
-            Track Your <span className="text-gradient">SNACKS</span> Consumption
+            Track Your <span className="text-gradient">Naija Food</span> Consumption
           </h2>
           <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-            Capture your snacking moments with audio and video. Get rewarded for sharing your  snacking experiences and gain valuable insights into your consumption patterns.
+            Capture your food moments with audio and video. Get rewarded for sharing your Nigerian snacking experiences and gain valuable insights into your consumption patterns.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/register">
@@ -44,16 +44,16 @@ const Index = () => {
                 Start Tracking Now
               </Button>
             </Link>
-            {/* <Button variant="outline" size="lg" className="border-2 border-blue-300 text-blue-600 hover:bg-blue-50 glass-effect px-8 py-3 text-lg">
+            <Button variant="outline" size="lg" className="border-2 border-blue-300 text-blue-600 hover:bg-blue-50 glass-effect px-8 py-3 text-lg">
               Watch Demo
-            </Button> */}
+            </Button>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
       <section className="container mx-auto px-4 py-16">
-        <h3 className="text-3xl font-bold text-center text-gray-800 mb-12">Features</h3>
+        <h3 className="text-3xl font-bold text-center text-gray-800 mb-12">Powerful Features</h3>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           <Card className="glass-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 hover-glow">
             <CardHeader>
@@ -63,7 +63,7 @@ const Index = () => {
               <CardTitle className="text-gray-800">AI-Powered Media Analysis</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">Record audio or video of your meals. Our AI automatically extracts consumption details and context from your snacking experiences.</p>
+              <p className="text-gray-600">Record audio or video of your meals. Our AI automatically extracts consumption details and context from your Nigerian food experiences.</p>
             </CardContent>
           </Card>
 
@@ -72,7 +72,7 @@ const Index = () => {
               <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center mb-4">
                 <Gift className="h-6 w-6 text-white" />
               </div>
-              <CardTitle className="text-gray-800">Rewards</CardTitle>
+              <CardTitle className="text-gray-800">Naija Rewards</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-600">Earn points for every log entry. Redeem for MTN/Airtel airtime, Jumia vouchers, and other Nigerian rewards.</p>
@@ -129,15 +129,27 @@ const Index = () => {
         </div>
       </section>
 
+      {/* CTA Section */}
+      <section className="gradient-hero text-white py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h3 className="text-3xl font-bold mb-4">Ready to Start Your Naija Food Journey?</h3>
+          <p className="text-xl mb-8 opacity-90">Join thousands of Nigerians already tracking their consumption and earning rewards.</p>
+          <Link to="/register">
+            <Button size="lg" variant="secondary" className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 text-lg hover-glow">
+              Sign Up Free Today
+            </Button>
+          </Link>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="bg-blue-900 text-white py-8">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <div className="w-6 h-6 nigeria-accent rounded-full"></div>
-            <span className="text-xl font-bold">SnacksTrack</span>
+            <span className="text-xl font-bold">NaijaSnack</span>
           </div>
-          <p className="text-blue-200">© 2025 Inicio Insights Tech Team.</p>
+          <p className="text-blue-200">© 2024 NaijaSnack. Empowering better consumption insights for Nigerians.</p>
         </div>
       </footer>
     </div>

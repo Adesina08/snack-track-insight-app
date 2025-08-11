@@ -1,19 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
+import { dbOperations } from "@/lib/database";
 import { authUtils } from "@/lib/auth";
 
 const Register = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -28,29 +26,9 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load saved form data from localStorage on mount
-  useEffect(() => {
-    const savedData = localStorage.getItem("registerForm");
-    if (savedData) {
-      setFormData(JSON.parse(savedData));
-    }
-  }, []);
-
-  // Save form data to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem("registerForm", JSON.stringify(formData));
-  }, [formData]);
-
-  // Clear saved form when visiting homepage
-  useEffect(() => {
-    if (location.pathname === "/") {
-      localStorage.removeItem("registerForm");
-    }
-  }, [location.pathname]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Passwords don't match",
@@ -70,31 +48,43 @@ const Register = () => {
     }
 
     setIsLoading(true);
-
+    
     try {
-      const response = await apiClient.register({
+      // Check if user already exists
+      const existingUser = await dbOperations.getUserByEmail(formData.email);
+      if (existingUser) {
+        toast({
+          title: "Account exists",
+          description: "An account with this email already exists.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Hash password
+      const hashedPassword = await authUtils.hashPassword(formData.password);
+
+      // Create user in database
+      const newUser = await dbOperations.createUser({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         phone: formData.phone,
-        password: formData.password,
+        passwordHash: hashedPassword,
       });
 
-      if (response.user) {
-        const token = await authUtils.generateToken(response.user);
-        authUtils.setAuthToken(token);
+      // Generate JWT token
+      const token = await authUtils.generateToken(newUser);
+      authUtils.setAuthToken(token);
 
-        localStorage.removeItem("registerForm"); // Clear saved form on success
-
-        toast({
-          title: "Account created successfully!",
-          description: "Welcome to SnackTrack. You can now start logging your consumption.",
-        });
-
-        navigate("/dashboard");
-      }
+      toast({
+        title: "Account created successfully!",
+        description: "Welcome to SnackTrack. You can now start logging your consumption.",
+      });
+      
+      navigate("/dashboard");
     } catch (error) {
-      console.error("Registration error:", error);
+      console.error('Registration error:', error);
       toast({
         title: "Registration failed",
         description: "An error occurred during registration. Please try again.",
@@ -130,7 +120,7 @@ const Register = () => {
                   <Input
                     id="firstName"
                     value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                     required
                     className="border-blue-200 focus:border-blue-400 glass-effect"
                   />
@@ -140,7 +130,7 @@ const Register = () => {
                   <Input
                     id="lastName"
                     value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                     required
                     className="border-blue-200 focus:border-blue-400 glass-effect"
                   />
@@ -153,7 +143,7 @@ const Register = () => {
                   id="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
                   required
                   className="border-blue-200 focus:border-blue-400 glass-effect"
                 />
@@ -165,7 +155,7 @@ const Register = () => {
                   id="phone"
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
                   required
                   className="border-blue-200 focus:border-blue-400 glass-effect"
                 />
@@ -178,7 +168,7 @@ const Register = () => {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
                     required
                     className="border-blue-200 focus:border-blue-400 pr-10 glass-effect"
                   />
@@ -199,7 +189,7 @@ const Register = () => {
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                     required
                     className="border-blue-200 focus:border-blue-400 pr-10 glass-effect"
                   />
@@ -218,9 +208,7 @@ const Register = () => {
                   <Checkbox
                     id="terms"
                     checked={formData.agreeToTerms}
-                    onCheckedChange={(checked) =>
-                      setFormData({ ...formData, agreeToTerms: checked as boolean })
-                    }
+                    onCheckedChange={(checked) => setFormData({...formData, agreeToTerms: checked as boolean})}
                   />
                   <Label htmlFor="terms" className="text-sm">
                     I agree to the <Link to="/terms" className="text-blue-600 hover:underline">Terms and Conditions</Link>
@@ -231,9 +219,7 @@ const Register = () => {
                   <Checkbox
                     id="marketing"
                     checked={formData.agreeToMarketing}
-                    onCheckedChange={(checked) =>
-                      setFormData({ ...formData, agreeToMarketing: checked as boolean })
-                    }
+                    onCheckedChange={(checked) => setFormData({...formData, agreeToMarketing: checked as boolean})}
                   />
                   <Label htmlFor="marketing" className="text-sm">
                     I want to receive marketing communications
