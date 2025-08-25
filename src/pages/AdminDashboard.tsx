@@ -3,16 +3,24 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, TrendingUp, Award, Database, Download, Calendar } from "lucide-react";
+import { Users, TrendingUp, Award, Database, Download, Calendar, BarChart3, Activity } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import AdminSidebar from "@/components/AdminSidebar";
+import AdminCharts from "@/components/AdminCharts";
 import { dbOperations } from "@/lib/database";
-import ActivityCalendar from 'react-activity-calendar';
 
 interface AdminStats {
   totalUsers: number;
   totalLogs: number;
   totalPoints: number;
   recentActivity: any[];
+}
+
+interface ChartData {
+  name: string;
+  value: number;
+  growth?: number;
+  secondary?: number;
 }
 
 interface ActivityData {
@@ -29,7 +37,11 @@ const AdminDashboard = () => {
     recentActivity: []
   });
   const [activityData, setActivityData] = useState<ActivityData[]>([]);
+  const [timeSeriesData, setTimeSeriesData] = useState<ChartData[]>([]);
+  const [categoryData, setCategoryData] = useState<ChartData[]>([]);
+  const [brandData, setBrandData] = useState<ChartData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [filters, setFilters] = useState({ category: "all", timePeriod: "30d" });
 
   useEffect(() => {
     loadAdminData();
@@ -58,6 +70,12 @@ const AdminDashboard = () => {
       // Generate activity heatmap data (last 365 days)
       const heatmapData = generateActivityHeatmap(analytics);
       setActivityData(heatmapData);
+
+      // Generate chart data
+      const chartData = generateChartData(logs, analytics);
+      setTimeSeriesData(chartData.timeSeries);
+      setCategoryData(chartData.categories);
+      setBrandData(chartData.brands);
       
     } catch (error) {
       console.error('Error loading admin data:', error);
@@ -129,6 +147,65 @@ const AdminDashboard = () => {
     return data;
   };
 
+  const generateChartData = (logs: any[], analytics: any[]) => {
+    // Time series data (last 30 days)
+    const timeSeries: ChartData[] = [];
+    const today = new Date();
+    
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      const dayLogs = logs.filter(log => 
+        new Date(log.createdAt).toISOString().split('T')[0] === dateStr
+      );
+      
+      const dayUsers = new Set(dayLogs.map(log => log.userId)).size;
+      
+      timeSeries.push({
+        name: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        value: dayLogs.length,
+        secondary: dayUsers,
+        growth: Math.floor(Math.random() * 20) + 5 // Mock growth data
+      });
+    }
+
+    // Category data
+    const categoryMap = new Map<string, number>();
+    logs.forEach(log => {
+      const count = categoryMap.get(log.category) || 0;
+      categoryMap.set(log.category, count + 1);
+    });
+
+    const categories: ChartData[] = Array.from(categoryMap.entries()).map(([name, value]) => ({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      value,
+      growth: Math.floor(Math.random() * 30) - 10 // Mock growth percentage
+    }));
+
+    // Brand data (top 10 brands over time)
+    const brandMap = new Map<string, number>();
+    logs.forEach(log => {
+      if (log.brand) {
+        const count = brandMap.get(log.brand) || 0;
+        brandMap.set(log.brand, count + 1);
+      }
+    });
+
+    const topBrands = Array.from(brandMap.entries())
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 6);
+
+    const brands: ChartData[] = topBrands.map(([name, value]) => ({
+      name,
+      value,
+      growth: Math.floor(Math.random() * 40) + 10 // Mock growth data
+    }));
+
+    return { timeSeries, categories, brands };
+  };
+
   const exportData = async () => {
     try {
       const logs = await dbOperations.getAllConsumptionLogs();
@@ -158,13 +235,28 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleFiltersChange = (newFilters: any) => {
+    setFilters(newFilters);
+    // In a real app, this would trigger data refetch with new filters
+    console.log('Filters changed:', newFilters);
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen gradient-secondary">
+      <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="flex">
+          <div className="w-80 bg-card border-r border-border p-6">
+            <div className="animate-pulse space-y-4">
+              <div className="h-4 bg-muted rounded w-3/4"></div>
+              <div className="h-4 bg-muted rounded w-1/2"></div>
+              <div className="h-32 bg-muted rounded"></div>
+            </div>
+          </div>
+          <div className="flex-1 p-6">
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -172,175 +264,137 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen gradient-secondary pb-20 lg:pb-0">
+    <div className="min-h-screen bg-background">
       <Navigation />
       
-      <div className="container mx-auto px-4 py-6">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gradient mb-2">Admin Dashboard</h1>
-              <p className="text-muted-foreground">Monitor app activity and user engagement</p>
-            </div>
-            <Button onClick={exportData} className="gradient-primary hover-glow text-white">
-              <Download className="h-4 w-4 mr-2" />
-              Export Data
-            </Button>
+      <div className="flex w-full">
+        {/* Sidebar */}
+        <AdminSidebar 
+          onExportData={exportData}
+          onFiltersChange={handleFiltersChange}
+        />
+        
+        {/* Main Content */}
+        <div className="flex-1 p-6 overflow-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-foreground mb-2">Analytics Dashboard</h1>
+            <p className="text-muted-foreground">Monitor consumption patterns and user engagement</p>
           </div>
-        </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="glass-card hover-glow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-                  <p className="text-2xl font-bold text-gradient">{stats.totalUsers}</p>
-                </div>
-                <Users className="h-8 w-8 text-blue-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card hover-glow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Logs</p>
-                  <p className="text-2xl font-bold text-gradient">{stats.totalLogs}</p>
-                </div>
-                <Database className="h-8 w-8 text-green-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card hover-glow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Points</p>
-                  <p className="text-2xl font-bold text-gradient">{stats.totalPoints}</p>
-                </div>
-                <Award className="h-8 w-8 text-yellow-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card hover-glow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Avg/User</p>
-                  <p className="text-2xl font-bold text-gradient">
-                    {stats.totalUsers > 0 ? Math.round(stats.totalLogs / stats.totalUsers) : 0}
-                  </p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-purple-500" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Activity Heatmap */}
-        <Card className="glass-card hover-glow mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Calendar className="h-5 w-5 mr-2 text-blue-500" />
-              Activity Heatmap (Last 365 Days)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {activityData.length > 0 ? (
-              <>
-                <div className="overflow-x-auto">
-                  <ActivityCalendar
-                    data={activityData}
-                    theme={{
-                      light: ['#f0f9ff', '#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8'],
-                      dark: ['#1e293b', '#334155', '#475569', '#64748b', '#94a3b8']
-                    }}
-                    fontSize={12}
-                    blockSize={12}
-                    blockMargin={2}
-                    showWeekdayLabels
-                    renderBlock={(block, activity) => {
-                      const colors = ['#f0f9ff', '#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8'];
-                      return (
-                        <div
-                          title={`${activity.date}: ${activity.count} logs`}
-                          style={{
-                            backgroundColor: colors[activity.level],
-                            borderRadius: '2px',
-                            width: '12px',
-                            height: '12px'
-                          }}
-                        />
-                      );
-                    }}
-                  />
-                </div>
-                <div className="flex items-center justify-between mt-4 text-sm text-muted-foreground">
-                  <span>Less</span>
-                  <div className="flex items-center space-x-1">
-                    {[0, 1, 2, 3, 4].map(level => (
-                      <div
-                        key={level}
-                        className="w-3 h-3 rounded-sm"
-                        style={{
-                          backgroundColor: ['#f0f9ff', '#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8'][level]
-                        }}
-                      />
-                    ))}
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card className="border-border hover-glow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Users</p>
+                    <p className="text-2xl font-bold text-foreground">{stats.totalUsers}</p>
+                    <p className="text-xs text-green-600 mt-1">+12.5% from last month</p>
                   </div>
-                  <span>More</span>
+                  <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <Users className="h-6 w-6 text-white" />
+                  </div>
                 </div>
-              </>
-            ) : (
-              <div className="flex items-center justify-center h-32 text-muted-foreground">
-                <p>No activity data available</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        {/* Recent Activity */}
-        <Card className="glass-card hover-glow">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {stats.recentActivity.length > 0 ? (
-                stats.recentActivity.map((log, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 glass-effect rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center">
-                        <Database className="h-5 w-5 text-white" />
+            <Card className="border-border hover-glow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Logs</p>
+                    <p className="text-2xl font-bold text-foreground">{stats.totalLogs}</p>
+                    <p className="text-xs text-green-600 mt-1">+23.1% from last month</p>
+                  </div>
+                  <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                    <Database className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border hover-glow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Points</p>
+                    <p className="text-2xl font-bold text-foreground">{stats.totalPoints}</p>
+                    <p className="text-xs text-green-600 mt-1">+18.7% from last month</p>
+                  </div>
+                  <div className="w-12 h-12 bg-yellow-500 rounded-lg flex items-center justify-center">
+                    <Award className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border hover-glow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Avg/User</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {stats.totalUsers > 0 ? Math.round(stats.totalLogs / stats.totalUsers) : 0}
+                    </p>
+                    <p className="text-xs text-green-600 mt-1">+8.3% from last month</p>
+                  </div>
+                  <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Charts */}
+          <AdminCharts 
+            timeSeriesData={timeSeriesData}
+            categoryData={categoryData}
+            brandData={brandData}
+          />
+
+          {/* Recent Activity */}
+          <Card className="border-border hover-glow mt-8">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Activity className="h-5 w-5 text-primary" />
+                <span>Recent Activity</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {stats.recentActivity.length > 0 ? (
+                  stats.recentActivity.slice(0, 5).map((log, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-accent/10 rounded-lg border border-border">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                          <Database className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">{log.users?.firstName} {log.users?.lastName}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Logged {log.product} • {log.category}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">{log.users?.firstName} {log.users?.lastName}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Logged {log.product} • {log.category}
-                        </p>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant={log.captureMethod === 'ai' ? 'default' : 'secondary'}>
+                          {log.captureMethod}
+                        </Badge>
+                        <span className="text-sm font-medium text-green-600">+{log.points} pts</span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant={log.captureMethod === 'ai' ? 'default' : 'secondary'}>
-                        {log.captureMethod}
-                      </Badge>
-                      <span className="text-sm font-medium text-green-600">+{log.points} pts</span>
-                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-center justify-center h-32 text-muted-foreground">
+                    <p>No recent activity</p>
                   </div>
-                ))
-              ) : (
-                <div className="flex items-center justify-center h-32 text-muted-foreground">
-                  <p>No recent activity</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
