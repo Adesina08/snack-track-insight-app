@@ -1,30 +1,14 @@
 
 import { useState, useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AdminSidebar from "@/components/AdminSidebar";
 import AdminCharts from "@/components/AdminCharts";
-import { dbOperations } from "@/lib/database";
-
-interface AdminStats {
-  totalUsers: number;
-  totalLogs: number;
-  totalPoints: number;
-  recentActivity: any[];
-}
-
-interface ChartData {
-  name: string;
-  value: number;
-  growth?: number;
-  secondary?: number;
-}
-
-interface ActivityData {
-  date: string;
-  count: number;
-  level: 0 | 1 | 2 | 3 | 4;
-}
+import {
+  googleSheetsService,
+  buildConsumptionAnalytics,
+  type ChartData,
+} from "@/lib/googleSheets";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -33,6 +17,7 @@ const AdminDashboard = () => {
   const [brandData, setBrandData] = useState<ChartData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({ category: "all", timePeriod: "30d" });
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadAdminData();
@@ -41,15 +26,31 @@ const AdminDashboard = () => {
   const loadAdminData = async () => {
     try {
       setIsLoading(true);
-      
-      // Generate mock chart data for the simple dashboard
+      setError(null);
+
+      const records = await googleSheetsService.fetchConsumptionRecords();
+      const analytics = buildConsumptionAnalytics(records);
+
+      if (!analytics.timeSeries.length && !analytics.categories.length && !analytics.brands.length) {
+        setError("No Google Sheets data found for the configured range.");
+      }
+
+      setTimeSeriesData(analytics.timeSeries);
+      setCategoryData(analytics.categories);
+      setBrandData(analytics.brands);
+
+    } catch (error) {
+      console.error('Error loading admin data:', error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to load data from Google Sheets.'
+      );
+
       const chartData = generateMockChartData();
       setTimeSeriesData(chartData.timeSeries);
       setCategoryData(chartData.categories);
       setBrandData(chartData.brands);
-      
-    } catch (error) {
-      console.error('Error loading admin data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -74,10 +75,10 @@ const AdminDashboard = () => {
     ];
 
     const brands: ChartData[] = [
-      { name: "Kellogg's", value: 35 },
-      { name: "Dangote", value: 28 },
-      { name: "Nestle", value: 22 },
-      { name: "Burger King", value: 15 },
+      { name: "Kellogg's", value: 35, secondary: 35 },
+      { name: "Dangote", value: 28, secondary: 28 },
+      { name: "Nestle", value: 22, secondary: 22 },
+      { name: "Burger King", value: 15, secondary: 15 },
     ];
 
     return { timeSeries, categories, brands };
@@ -127,7 +128,16 @@ const AdminDashboard = () => {
         
         {/* Main Content */}
         <div className="flex-1 p-8">
-          <AdminCharts 
+          {error && (
+            <div className="mb-6 flex items-start space-x-3 rounded-lg border border-yellow-500/40 bg-yellow-500/10 p-4 text-sm text-yellow-900 dark:text-yellow-100">
+              <AlertCircle className="h-5 w-5 mt-0.5" />
+              <div>
+                <p className="font-medium">Google Sheets data notice</p>
+                <p>{error}</p>
+              </div>
+            </div>
+          )}
+          <AdminCharts
             timeSeriesData={timeSeriesData}
             categoryData={categoryData}
             brandData={brandData}
