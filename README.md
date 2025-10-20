@@ -60,6 +60,22 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Connecting Google Sheets data
+
+The admin dashboard can now pull live insights from a Google Sheet instead of Kobo Collect. Provide the following environment variables (for example by creating a `.env` file at the project root) before starting the app:
+
+```bash
+VITE_GOOGLE_SHEETS_ID=<your-sheet-id>
+VITE_GOOGLE_SHEETS_API_KEY=<google-cloud-api-key>
+VITE_GOOGLE_SHEETS_RANGE="Sheet1!A1:Z"
+```
+
+- `VITE_GOOGLE_SHEETS_ID` is the ID from your sheet's URL (the value between `/d/` and `/edit`).
+- `VITE_GOOGLE_SHEETS_API_KEY` must have access to the Google Sheets API.
+- `VITE_GOOGLE_SHEETS_RANGE` is optional and defaults to `Sheet1!A1:Z`.
+
+The first row of the sheet should contain headers such as `Date`, `Product`, `Category`, `Brand`, and `Points`. The dashboard will automatically normalise header names and build analytics based on the rows beneath the header.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/7ce6c920-304f-4ec8-857a-ec9a6e58b3dc) and click on Share -> Publish.
